@@ -16,10 +16,10 @@ class Graph:
         Initializes the Graph API client with environment variables.
         Sets up initial state with no active client connection.
         """
-        self.client_id = os.getenv("CLIENT_ID")
-        self.client_secret = os.getenv("CLIENT_SECRET")
-        self.tenant_id = os.getenv("TENANT_ID")
-        self.redirect_uri = os.getenv("REDIRECT_URI")
+        self.client_id = os.getenv("AZURE_CLIENT_ID")
+        self.client_secret = os.getenv("AZURE_CLIENT_SECRET")
+        self.tenant_id = os.getenv("AZURE_TENANT_ID")
+        self.redirect_uri = os.getenv("AZURE_REDIRECT_URI")
 
         self.scopes = os.getenv("AZURE_GRAPH_USER_SCOPES", "").split(" ")
         self.client: Optional[GraphServiceClient] = None
@@ -30,7 +30,7 @@ class Graph:
             logger.error(
                 """
                 Missing required environment variables:
-                CLIENT_ID, CLIENT_SECRET, TENANT_ID, REDIRECT_URI
+                AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID, AZURE_REDIRECT_URI
                 """
             )
             raise ValueError("Missing required environment variables for Graph API authentication.")
