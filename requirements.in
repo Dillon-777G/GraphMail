@@ -1,0 +1,7 @@
+azure-identity
+msgraph-sdk
+fastapi
+uvicorn
+fastapi 
+msal
+beautifulsoup4>=4.12.2

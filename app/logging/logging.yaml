@@ -1,0 +1,43 @@
+
+
+# The following documentation contains the sources for my comments in this file.
+# Subject to possible change, if there is an error here check to see if the 
+# documentation has been altered.
+# source: https://docs.python.org/3/library/logging.config.html#logging.config.dictConfig
+#
+
+
+# version - can only be 1
+version: 1
+
+
+#Formats the logging output
+###########################
+# Example below
+# 2025-01-14 16:21:18,879 - app.service.graph_service - INFO - Graph client initialized successfully    
+formatters:
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+
+handlers:
+
+
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+
+  # rotating file handler to keep file sizes manageable
+  file:
+    class: logging.handlers.RotatingFileHandler
+    formatter: simple
+    level: DEBUG
+    filename: logs/app.log
+
+
+# With this setting only, all logging will follow the exact syntax described above
+root:
+  level: INFO
+  handlers: [console, file]
