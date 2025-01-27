@@ -20,7 +20,6 @@ class Graph:
         self.client_secret = os.getenv("AZURE_CLIENT_SECRET")
         self.tenant_id = os.getenv("AZURE_TENANT_ID")
         self.redirect_uri = os.getenv("AZURE_REDIRECT_URI")
-
         self.scopes = os.getenv("AZURE_GRAPH_USER_SCOPES", "").split(" ")
         self.client: Optional[GraphServiceClient] = None
         self.credential: Optional[AuthorizationCodeCredential] = None
