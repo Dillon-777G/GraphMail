@@ -1,4 +1,4 @@
-# Graph Email Integration
+# GraphMail Integration
 
 This repository provides a framework for integrating Microsoft Graph API to fetch and manage emails from specified folders. It includes an asynchronous Python-based implementation utilizing FastAPI for the backend, Azure authentication, and Graph API integration.
 
