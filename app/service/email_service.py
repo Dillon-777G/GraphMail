@@ -2,7 +2,6 @@ import logging
 from typing import List
 
 from kiota_abstractions.base_request_configuration import RequestConfiguration
-from kiota_abstractions.request_information import QueryParameters
 from msgraph.generated.models.message_collection_response import MessageCollectionResponse
 
 from app.utils.graph_utils import GraphUtils

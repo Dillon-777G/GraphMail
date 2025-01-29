@@ -4,7 +4,6 @@ from typing import List
 
 from msgraph.generated.models.file_attachment import FileAttachment
 from kiota_abstractions.base_request_configuration import RequestConfiguration
-from kiota_abstractions.request_information import QueryParameters
 
 from app.exception.exceptions import EmailAttachmentException, GraphResponseException
 from app.utils.graph_utils import GraphUtils
