@@ -19,6 +19,8 @@ This repository provides a framework for integrating Microsoft Graph API to fetc
 │   │   ├── attachment_controller.py  # Handles email-attachment-related routes   
 │   │   ├── email_controller.py       # Handles email-related routes
 │   │   ├── folder_controller.py      # Main endpoint, contains the logic for navigation
+│   ├── fAPI_dependencies/
+│   │   ├── auth_dependency.py         # dependency for authenticating all endpoints 
 │   ├── exception/
 │   │   ├── exceptions.py            #Container class for defining all exceptions
 │   │   ├── exception_handler.py     #Global exception handler for the micro-service

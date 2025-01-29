@@ -7,7 +7,6 @@ from app.exception.exceptions import AuthenticationFailedException
 
 logger = logging.getLogger(__name__)
 
-# pylint: disable=too-few-public-methods
 class Graph:
     """Handles Microsoft Graph API client setup and authentication."""
 

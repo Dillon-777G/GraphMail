@@ -145,9 +145,11 @@ class AttachmentService:
                 .attachments.get()
             )
 
+            # Filter for file attachments only and convert them
             return [
                 EmailAttachment.graph_email_attachment(att)
                 for att in self.graph_utils.get_collection_value(response, AttachmentCollectionResponse)
+                if att.odata_type == "#microsoft.graph.fileAttachment"  # Only process file attachments
             ]
 
         except GraphResponseException as e:

@@ -1,10 +1,7 @@
-# Standard library imports
 import logging
 
-# Third party imports
 from fastapi import FastAPI
 
-# Local application imports
 from app.logging.logging_config import setup_logging
 from app.controllers.auth_controller import auth_controller
 from app.controllers.email_controller import email_controller
@@ -15,6 +12,8 @@ from app.service.email_service import EmailService
 from app.service.folder_service import FolderService
 from app.service.attachment_service import AttachmentService
 from app.utils.graph_utils import GraphUtils
+from app.exception.exception_handler import *
+from app.exception.exceptions import *
 
 # Setup logging
 setup_logging()
@@ -23,7 +22,15 @@ logger = logging.getLogger(__name__)
 # Initialize FastAPI app
 app = FastAPI(
     title="Graph Email API",
-    description="API for interacting with Microsoft Graph Email"
+    description="API for interacting with Microsoft Graph Email",
+    exception_handlers={
+        AuthenticationFailedException: authentication_exception_handler,
+        EmailAttachmentException: attachment_exception_handler,
+        IdTranslationException: id_translation_exception_handler,
+        FolderException: folder_exception_handler,
+        GraphResponseException: graph_response_exception_handler,
+        Exception: global_exception_handler
+    }
 )
 
 # Initialize shared Graph instance

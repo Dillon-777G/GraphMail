@@ -25,6 +25,8 @@ class TestAttachmentService:
         # Mock the Graph class
         graph_service = Graph()
         graph_service.client = mock_graph_client
+        # Add mock for ensure_authenticated
+        graph_service.ensure_authenticated = MagicMock(return_value={"authenticated": True})
 
         # Create dependencies
         graph_utils = GraphUtils(graph_service)
@@ -62,9 +64,14 @@ class TestAttachmentService:
 
         # Create real Attachment objects
         file_attachment = FileAttachment()
+        file_attachment.id = "test-attachment-id"
         file_attachment.name = "test.txt"
+        file_attachment.content_type = "text/plain"
+        file_attachment.size = 123
+        file_attachment.is_inline = False
         file_attachment.odata_type = "#microsoft.graph.fileAttachment"
 
+        # Create a test item attachment
         item_attachment = ItemAttachment()
         item_attachment.name = "Test Email"
         item_attachment.odata_type = "#microsoft.graph.itemAttachment"

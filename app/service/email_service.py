@@ -1,13 +1,10 @@
-# Standard library imports
 import logging
 from typing import List
 
-# Third party imports
 from kiota_abstractions.base_request_configuration import RequestConfiguration
 from msgraph.generated.drives.item.root.root_request_builder import RootRequestBuilder
 from msgraph.generated.models.message_collection_response import MessageCollectionResponse
 
-# Local application imports
 from app.utils.graph_utils import GraphUtils
 from app.models.email import Email
 from app.exception.exceptions import EmailException, IdTranslationException
@@ -86,7 +83,6 @@ class EmailService:
                 status_code=500,
             ) from e
 
-
     async def get_folder_emails(self, folder_name: str) -> List[Email]:
         """
         Retrieves emails from a specified folder by its name.
@@ -114,7 +110,6 @@ class EmailService:
             messages = await self.graph_utils.graph.client.me.mail_folders.by_mail_folder_id(folder_id).messages.get(
                 request_configuration=request_configuration
             )
-            print(f"email response test: {messages}")
             # Translate message IDs to immutable IDs
             rest_ids = [msg.id for msg in self.graph_utils.get_collection_value(messages, MessageCollectionResponse) if msg.id]
             translated_ids = await self.graph_utils.translate_ids(rest_ids)

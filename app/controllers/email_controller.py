@@ -1,25 +1,28 @@
 import logging
+from typing import Union
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends
+from starlette.responses import RedirectResponse
 
 from app.service.email_service import EmailService
 from app.service.graph_service import Graph
+from app.fAPI_dependencies.auth_dependency import AuthDependency
 
 logger = logging.getLogger(__name__)
 
 def email_controller(graph: Graph, email_service: EmailService) -> APIRouter:
     router = APIRouter()
-
+    auth = AuthDependency(graph)
+    
     @router.get("/emails")
-    async def get_emails(request: Request, folder_name: str):
+    async def get_emails(folder_name: str,
+     auth_response: Union[RedirectResponse, None] = Depends(auth)):
         """
-        Fetch emails from a specified folder. Handles authentication if necessary.
+        Fetch emails from a specified folder.
         """
-        auth_status = graph.ensure_authenticated(request.query_params.get("code"))
-        if not auth_status["authenticated"]:
-            return {"status": "Authentication required", "auth_url": auth_status["auth_url"]}
-
-        # Fetch emails from the specified folder
+        if auth_response:
+            return auth_response
+        
         emails = await email_service.get_folder_emails(folder_name)
         return {
             "status": "success",

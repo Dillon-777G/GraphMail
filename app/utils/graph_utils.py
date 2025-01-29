@@ -23,8 +23,6 @@ SUMMARY:
 This class serves as a utility class for all graph operations that are not directly tied 
 to an entity in this code base.
 """
-
-
 class GraphUtils:
     def __init__(self, graph: Graph):
         self.graph = graph
