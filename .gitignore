@@ -1,13 +1,16 @@
 # pycache
-__pycache__
-/app/controllers/__pycache__
-/app/routers/__pycache__
-/app/service/__pycache__
+.pytest_cache
+__pycache__/
+/app/controllers/__pycache__/
+/app/exception/__pycache__/
+/app/service/__pycache__/
+/app/utils/__pycache__/
+/app/models/__pycache__/
 
 # Intellij
 .idea/
 *.iml
 
+#need log dir but not the files
 /log
-
-.env
+.log
