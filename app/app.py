@@ -12,8 +12,21 @@ from app.service.email_service import EmailService
 from app.service.folder_service import FolderService
 from app.service.attachment_service import AttachmentService
 from app.utils.graph_utils import GraphUtils
-from app.exception.exception_handler import *
-from app.exception.exceptions import *
+from app.exception.exception_handler import (
+    authentication_exception_handler,
+    attachment_exception_handler,
+    id_translation_exception_handler,
+    folder_exception_handler,
+    graph_response_exception_handler,
+    global_exception_handler
+)
+from app.exception.exceptions import (
+    AuthenticationFailedException,
+    EmailAttachmentException,
+    IdTranslationException,
+    FolderException,
+    GraphResponseException
+)
 
 # Setup logging
 setup_logging()
