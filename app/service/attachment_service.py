@@ -2,8 +2,9 @@ import base64
 import logging
 from typing import List
 
-from msgraph.generated.models.attachment_collection_response import AttachmentCollectionResponse
 from msgraph.generated.models.file_attachment import FileAttachment
+from kiota_abstractions.base_request_configuration import RequestConfiguration
+from kiota_abstractions.request_information import QueryParameters
 
 from app.exception.exceptions import EmailAttachmentException, GraphResponseException
 from app.utils.graph_utils import GraphUtils
@@ -137,19 +138,26 @@ class AttachmentService:
         try:
             folder_id = await self.graph_utils.get_folder_id_by_name(folder_name)
 
-            # Get the attachments
-            response: AttachmentCollectionResponse = await (
-                self.graph_utils.graph.client.me.mail_folders
-                .by_mail_folder_id(folder_id)
-                .messages.by_message_id(message_id)
-                .attachments.get()
+            # Configure request to include attachments
+            query_params = {"expand": ["attachments"]}
+            request_configuration = RequestConfiguration(query_parameters=query_params)
+
+            # Get single message with attachments
+            message = await self.graph_utils.graph.client.me.mail_folders.by_mail_folder_id(
+                folder_id
+            ).messages.by_message_id(message_id).get(
+                request_configuration=request_configuration
             )
+
+            if not message or not message.attachments:
+                logger.info("No attachments found for message ID %s", message_id)
+                return []
 
             # Filter for file attachments only and convert them
             return [
                 EmailAttachment.graph_email_attachment(att)
-                for att in self.graph_utils.get_collection_value(response, AttachmentCollectionResponse)
-                if att.odata_type == "#microsoft.graph.fileAttachment"  # Only process file attachments
+                for att in message.attachments
+                if att.odata_type == "#microsoft.graph.fileAttachment"
             ]
 
         except GraphResponseException as e:

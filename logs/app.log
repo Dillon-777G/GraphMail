@@ -530,3 +530,44 @@ Response headers:
 ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
                                          
             
+2025-01-29 12:58:55,171 - app.app - INFO - 
+            
+            
+ ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+██║  ███╗██████╔╝███████║██████╔╝███████║
+██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                         
+███╗   ███╗ █████╗ ██╗██╗                
+████╗ ████║██╔══██╗██║██║                
+██╔████╔██║███████║██║██║                
+██║╚██╔╝██║██╔══██║██║██║                
+██║ ╚═╝ ██║██║  ██║██║███████╗           
+╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                         
+            
+2025-01-29 12:59:07,961 - azure.core.pipeline.policies.http_logging_policy - INFO - Request URL: 'https://login.microsoftonline.com/5435dd0c-e8ac-49f5-a4de-ed8654c4672e/oauth2/v2.0/token'
+Request method: 'POST'
+Request headers:
+    'Content-Type': 'application/x-www-form-urlencoded'
+    'User-Agent': 'azsdk-python-identity/1.19.0 Python/3.11.11 (Linux-6.13.0-1-default-x86_64-with-glibc2.40)'
+A body is sent with the request
+2025-01-29 12:59:08,315 - azure.core.pipeline.policies.http_logging_policy - INFO - Response status: 200
+Response headers:
+    'Cache-Control': 'no-store, no-cache'
+    'Pragma': 'no-cache'
+    'Content-Type': 'application/json; charset=utf-8'
+    'Expires': '-1'
+    'Strict-Transport-Security': 'REDACTED'
+    'X-Content-Type-Options': 'REDACTED'
+    'P3P': 'REDACTED'
+    'x-ms-request-id': '31da944c-8e3b-4cbe-89e6-ba2e0fa82000'
+    'x-ms-ests-server': 'REDACTED'
+    'x-ms-srs': 'REDACTED'
+    'Content-Security-Policy-Report-Only': 'REDACTED'
+    'X-XSS-Protection': 'REDACTED'
+    'Set-Cookie': 'REDACTED'
+    'Date': 'Wed, 29 Jan 2025 20:59:07 GMT'
+    'Content-Length': '2602'

@@ -2,7 +2,7 @@ import logging
 from typing import List
 
 from kiota_abstractions.base_request_configuration import RequestConfiguration
-from msgraph.generated.drives.item.root.root_request_builder import RootRequestBuilder
+from kiota_abstractions.request_information import QueryParameters
 from msgraph.generated.models.message_collection_response import MessageCollectionResponse
 
 from app.utils.graph_utils import GraphUtils
@@ -32,10 +32,9 @@ class EmailService:
         """
         try:
             # Configure request to include attachments
-            query_params = RootRequestBuilder.RootRequestBuilderGetQueryParameters(
-                expand=["attachments"]
-            )
+            query_params = {"expand": ["attachments"]}
             request_configuration = RequestConfiguration(query_parameters=query_params)
+
 
             # Get messages from folder with attachments
             messages = await self.graph_utils.graph.client.me.mail_folders.by_mail_folder_id(

@@ -12,23 +12,50 @@ from pathlib import Path
 
 class TestAttachmentService:
     @pytest.fixture
-    async def setup(self):
-        # Create a mock GraphServiceClient
+    async def setup(self, monkeypatch):
+        # Mock environment variables needed for Graph authentication
+        monkeypatch.setenv("AZURE_CLIENT_ID", "mock_client_id")
+        monkeypatch.setenv("AZURE_CLIENT_SECRET", "mock_client_secret")
+        monkeypatch.setenv("AZURE_TENANT_ID", "mock_tenant_id")
+        monkeypatch.setenv("AZURE_REDIRECT_URI", "mock_redirect_uri")
+        
+        # Create the base mock client that will be the root of our mock chain
         mock_graph_client = MagicMock()
 
-        # Mock asynchronous methods
-        mock_graph_client.me.messages.post = AsyncMock()
-        mock_graph_client.me.messages.by_message_id = MagicMock()
-        mock_graph_client.me.mail_folders.get = AsyncMock()
-        mock_graph_client.me.mail_folders.by_mail_folder_id = MagicMock()
-
-        # Mock the Graph class
+        # Set up the Graph service with our mock client
         graph_service = Graph()
         graph_service.client = mock_graph_client
-        # Add mock for ensure_authenticated
+        # Mock authentication to always return success without actually authenticating
         graph_service.ensure_authenticated = MagicMock(return_value={"authenticated": True})
 
-        # Create dependencies
+        # Build the mock chain from bottom to top
+        # This mirrors the actual API chain: 
+        # client.me.mail_folders.by_mail_folder_id().messages.by_message_id().get()
+        
+        # First, create a mock message that will be returned by the final get() call
+        mock_message = MagicMock()
+        # The get() method is async, so we use AsyncMock for it
+        mock_get = AsyncMock(return_value=mock_message)
+        
+        # Create the by_message_id object that has the get method
+        mock_by_message_id = MagicMock()
+        mock_by_message_id.get = mock_get
+        
+        # Create the messages object that has the by_message_id method
+        mock_messages = MagicMock()
+        mock_messages.by_message_id = MagicMock(return_value=mock_by_message_id)
+        
+        # Create the folder object that has the messages attribute
+        mock_folder = MagicMock()
+        mock_folder.messages = mock_messages
+        
+        # Set up the mail folders mock chain
+        # The get() for listing folders needs to be async
+        mock_graph_client.me.mail_folders.get = AsyncMock()
+        # by_mail_folder_id returns our mock folder
+        mock_graph_client.me.mail_folders.by_mail_folder_id = MagicMock(return_value=mock_folder)
+
+        # Create the actual service objects using our mocked dependencies
         graph_utils = GraphUtils(graph_service)
         attachment_service = AttachmentService(graph_utils)
 
@@ -37,32 +64,22 @@ class TestAttachmentService:
     async def test_get_message_attachments_filters_correctly(self, setup):
         attachment_service, graph_utils = setup
 
-        # Create the test_files directory if it doesn't exist
+        # Set up test file directory for attachment simulation
         test_files_dir = Path(__file__).parent / "test_files"
         test_files_dir.mkdir(parents=True, exist_ok=True)
 
-        # Create a test file attachment
+        # Create a sample test file
         test_file_path = test_files_dir / "test.txt"
         with open(test_file_path, "w") as f:
             f.write("Test content")
 
-        # Mock sending a test email
-        mock_message_id = "mockMessageId"
-        sent_message_mock = AsyncMock()
-        sent_message_mock.id = mock_message_id
-        graph_utils.graph.client.me.messages.post.return_value = sent_message_mock
-
-        # Mock retrieving mail folders
+        # Mock the folder listing response
+        # When get_folder_id_by_name is called, it will find this folder
         mock_folder_id = "mockFolderId"
-        graph_utils.graph.client.me.mail_folders.get.return_value.value = [
-            MagicMock(display_name="order3", id=mock_folder_id)
-        ]
+        mock_folder = MagicMock(display_name="order3", id=mock_folder_id)
+        graph_utils.graph.client.me.mail_folders.get.return_value = MagicMock(value=[mock_folder])
 
-        # Mock moving the message
-        move_mock = AsyncMock()
-        graph_utils.graph.client.me.messages.by_message_id(mock_message_id).move.post = move_mock
-
-        # Create real Attachment objects
+        # Create a sample file attachment that we expect to be returned
         file_attachment = FileAttachment()
         file_attachment.id = "test-attachment-id"
         file_attachment.name = "test.txt"
@@ -71,32 +88,30 @@ class TestAttachmentService:
         file_attachment.is_inline = False
         file_attachment.odata_type = "#microsoft.graph.fileAttachment"
 
-        # Create a test item attachment
+        # Create a sample item attachment that should be filtered out
         item_attachment = ItemAttachment()
         item_attachment.name = "Test Email"
         item_attachment.odata_type = "#microsoft.graph.itemAttachment"
 
-        # Mock AttachmentCollectionResponse
-        def mock_filtered_response(request_configuration=None):
-            # Check for query parameters
-            if request_configuration and request_configuration.query_parameters:
-                filter_value = request_configuration.query_parameters.get("$filter")
-                # Simulate filtering
-                if filter_value == "odata.type eq '#microsoft.graph.fileAttachment'":
-                    return AttachmentCollectionResponse(value=[file_attachment])
-            return AttachmentCollectionResponse(value=[file_attachment, item_attachment])
+        # Set up the message that will be returned by the API
+        mock_message = MagicMock()
+        mock_message.attachments = [file_attachment, item_attachment]
+        
+        # Configure the mock chain to return our message
+        graph_utils.graph.client.me.mail_folders.by_mail_folder_id().messages.by_message_id().get.return_value = mock_message
 
-        # Mock retrieving attachments
-        graph_utils.graph.client.me.mail_folders.by_mail_folder_id.return_value.messages.by_message_id.return_value.attachments.get = AsyncMock(
-            side_effect=mock_filtered_response
-        )
+        # Execute the method we're testing
+        attachments = await attachment_service.get_message_attachments("order3", "mockMessageId")
 
-        # Test the method
-        attachments = await attachment_service.get_message_attachments("order3", mock_message_id)
-
-        # Verify only file attachments are returned
+        # Verify that only file attachments were returned (item attachment filtered out)
         assert len(attachments) == 1
         assert attachments[0].name == "test.txt"
 
-        # Cleanup
+        # Verify that the API was called with the correct parameters
+        get_message_mock = graph_utils.graph.client.me.mail_folders.by_mail_folder_id().messages.by_message_id().get
+        assert get_message_mock.called
+        request_config = get_message_mock.call_args[1]['request_configuration']
+        assert request_config.query_parameters == {"expand": ["attachments"]}
+
+        # Clean up the test file
         os.remove(test_file_path)
