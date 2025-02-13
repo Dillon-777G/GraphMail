@@ -2,7 +2,7 @@ from typing import Optional, Literal, Union
 from pydantic import BaseModel, Field
 from msgraph.generated.models.attachment import Attachment
 from msgraph.generated.models.attachment_collection_response import AttachmentCollectionResponse
-from app.exception.exceptions import EmailAttachmentException
+from app.error_handling.exceptions.email_attachment_exception import EmailAttachmentException
 
 """
 NOTE:
