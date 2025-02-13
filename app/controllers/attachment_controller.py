@@ -1,13 +1,12 @@
 import logging
-from typing import Union
+from typing import Union, Dict
 
 from fastapi import APIRouter, Depends
-from starlette.responses import RedirectResponse
 
 from app.service.attachment_service import AttachmentService
-from app.service.graph_service import Graph
+from app.service.graph.graph_authentication_service import Graph
 from app.responses.attachment_response import AttachmentDownloadResponse
-from app.fAPI_dependencies.auth_dependency import AuthDependency
+from app.controllers.fAPI_dependencies.auth_dependency import AuthDependency
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +26,9 @@ def attachment_controller(graph: Graph, attachment_service: AttachmentService) -
     auth = AuthDependency(graph)
 
 
-    @router.get("/{folder_name}/{message_id}")
-    async def get_attachments(folder_name: str, message_id: str,
-     auth_response: Union[RedirectResponse, None] = Depends(auth)):
+    @router.get("/{folder_id}/{message_id}")
+    async def get_attachments(folder_id: str, message_id: str,
+     auth_response: Union[Dict[str,str], None] = Depends(auth)):
         """
         Fetch attachments for a specific message in a folder by folder name.
 
@@ -41,12 +40,12 @@ def attachment_controller(graph: Graph, attachment_service: AttachmentService) -
         Returns:
             JSON: List of attachments for the specified message.
         """
-        logger.info("Received request to get attachments for -> \n folder: %s \n message id: %s", folder_name, message_id)
+        logger.info("Received request to get attachments for -> \n folder id: %s \n message id: %s", folder_id, message_id)
         
         if auth_response:
             return auth_response
         
-        attachments = await attachment_service.get_message_attachments(folder_name, message_id)
+        attachments = await attachment_service.get_message_attachments(folder_id, message_id)
         return {
                 "status": "success",
                 "data": [
@@ -61,9 +60,9 @@ def attachment_controller(graph: Graph, attachment_service: AttachmentService) -
             }
 
 
-    @router.get("/{folder_name}/{message_id}/{attachment_id}/download")
-    async def download_attachment(folder_name: str, message_id: str, attachment_id: str,
-     auth_response: Union[RedirectResponse, None] = Depends(auth)):
+    @router.get("/{folder_id}/{message_id}/{attachment_id}/download")
+    async def download_attachment(folder_id: str, message_id: str, attachment_id: str,
+     auth_response: Union[Dict[str,str], None] = Depends(auth)):
         """
         Download a specific file attachment from a message.
 
@@ -78,12 +77,12 @@ def attachment_controller(graph: Graph, attachment_service: AttachmentService) -
 
         NOTE: This function will only work with fileAttachments
         """
-        logger.info("Received request to download attachment for -> \n folder: %s, \n message id: %s, \n attachment id: %s", folder_name, message_id, attachment_id)
+        logger.info("Received request to download attachment for -> \n folder id: %s, \n message id: %s, \n attachment id: %s", folder_id, message_id, attachment_id)
         
         if auth_response:
             return auth_response
         
-        attachment = await attachment_service.download_attachment(folder_name, message_id, attachment_id)
+        attachment = await attachment_service.download_attachment(folder_id, message_id, attachment_id)
         
         # Create metadata dictionary
         metadata = {

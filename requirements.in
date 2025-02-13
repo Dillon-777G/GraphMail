@@ -7,4 +7,13 @@ beautifulsoup4>=4.12.2
 pytest
 pytest-asyncio
 pydantic
-starlette
+sse-starlette
+pylint
+pyyaml
+python-dotenv>=1.0.0
+pytest-mock
+SQLAlchemy>=2.0.0
+pymysql
+mysql-connector-python>=8.2.0
+alembic>=1.13.0
+aiomysql

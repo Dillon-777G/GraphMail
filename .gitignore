@@ -14,3 +14,5 @@ __pycache__/
 #need log dir but not the files
 /log
 .log
+
+.env

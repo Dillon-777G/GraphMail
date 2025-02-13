@@ -1,0 +1,13 @@
+services:
+  fastapi-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"  # Map container port 5000 to host port 5000
+    environment:
+      AZURE_CLIENT_ID: "${AZURE_CLIENT_ID}"
+      AZURE_CLIENT_SECRET: "${AZURE_CLIENT_SECRET}"
+      AZURE_TENANT_ID: "${AZURE_TENANT_ID}"
+      AZURE_REDIRECT_URI: "${AZURE_REDIRECT_URI}"
+      AZURE_GRAPH_USER_SCOPES: "${AZURE_GRAPH_USER_SCOPES}"

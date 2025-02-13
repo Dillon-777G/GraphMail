@@ -1,14 +1,11 @@
-import logging
-
 from fastapi import APIRouter, Request
 
-from app.service.graph_service import Graph
-from app.exception.exceptions import AuthenticationFailedException
-
-logger = logging.getLogger(__name__)
+from app.service.graph.graph_authentication_service import Graph
+from app.error_handling.exceptions.authentication_exception import AuthenticationFailedException
 
 def auth_controller(graph: Graph) -> APIRouter:
     router = APIRouter()
+    
 
     @router.get("/auth")
     def initiate_auth():
@@ -33,14 +30,21 @@ def auth_controller(graph: Graph) -> APIRouter:
             AuthenticationFailedException: If authentication fails or code is missing
         """
         authorization_code = request.query_params.get('code')
+        state = request.query_params.get('state') 
         if not authorization_code:
             raise AuthenticationFailedException(
                 detail="Authorization code not provided",
                 status_code=400
             )
 
+        if not state:
+            raise AuthenticationFailedException(
+                detail="State parameter is missing in callback",
+                status_code =400
+            )
+
         # Exchange code for token - will raise AuthenticationFailedException if it fails
-        graph.exchange_code_for_token(authorization_code)
+        await graph.exchange_code_for_token(authorization_code, state)
         
         return {
             "status": "success",
