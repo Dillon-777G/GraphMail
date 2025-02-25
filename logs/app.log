@@ -571,3 +571,328 @@ Response headers:
     'Set-Cookie': 'REDACTED'
     'Date': 'Wed, 29 Jan 2025 20:59:07 GMT'
     'Content-Length': '2602'
+2025-02-24 18:38:11,611 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:38:11,618 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:39:54,178 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:39:54,185 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:44:22,828 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:44:22,835 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:44:26,371 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:44:26,378 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:46:08,203 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:46:08,210 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:56:04,654 - app.logging.logging_config - INFO - Logging system initialized
+2025-02-24 18:56:04,655 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:56:04,661 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:57:04,835 - app.logging.logging_config - INFO - Logging system initialized
+2025-02-24 18:57:04,836 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:57:04,842 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:57:22,359 - app.logging.logging_config - INFO - Logging system initialized
+2025-02-24 18:57:22,360 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:57:22,366 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:57:26,854 - app.logging.logging_config - INFO - Logging system initialized
+2025-02-24 18:57:26,855 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:57:26,864 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:57:28,143 - app.logging.logging_config - INFO - Logging system initialized
+2025-02-24 18:57:28,144 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:57:28,150 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:57:28,163 - app.app - INFO - DB session maker initialized.
+2025-02-24 18:57:28,167 - app.app - INFO - Database test query returned: auth_failed_logins
+2025-02-24 18:57:28,167 - app.app - INFO - Lifespan startup complete. Database connection test succeeded.
+2025-02-24 18:57:39,587 - app.app - INFO - Database connections cleaned up successfully.
+2025-02-24 18:57:39,587 - app.app - INFO - Shutting down...Goodbye!
+2025-02-24 18:57:40,071 - app.logging.logging_config - INFO - Logging system initialized
+2025-02-24 18:57:40,072 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:57:40,078 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:57:40,085 - app.app - INFO - DB session maker initialized.
+2025-02-24 18:57:40,088 - app.app - INFO - Database test query returned: auth_failed_logins
+2025-02-24 18:57:40,088 - app.app - INFO - Lifespan startup complete. Database connection test succeeded.
+2025-02-24 18:57:49,205 - app.app - INFO - Database connections cleaned up successfully.
+2025-02-24 18:57:49,205 - app.app - INFO - Shutting down...Goodbye!
+2025-02-24 18:57:49,683 - app.logging.logging_config - INFO - Logging system initialized
+2025-02-24 18:57:49,684 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:57:49,690 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:57:49,697 - app.app - INFO - DB session maker initialized.
+2025-02-24 18:57:49,700 - app.app - INFO - Database test query returned: auth_failed_logins
+2025-02-24 18:57:49,700 - app.app - INFO - Lifespan startup complete. Database connection test succeeded.
+2025-02-24 18:57:50,602 - app.app - INFO - Database connections cleaned up successfully.
+2025-02-24 18:57:50,603 - app.app - INFO - Shutting down...Goodbye!
+2025-02-24 18:57:51,080 - app.logging.logging_config - INFO - Logging system initialized
+2025-02-24 18:57:51,081 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:57:51,087 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:57:51,093 - app.app - INFO - DB session maker initialized.
+2025-02-24 18:57:51,096 - app.app - INFO - Database test query returned: auth_failed_logins
+2025-02-24 18:57:51,096 - app.app - INFO - Lifespan startup complete. Database connection test succeeded.
+2025-02-24 18:57:54,603 - app.app - INFO - Database connections cleaned up successfully.
+2025-02-24 18:57:54,603 - app.app - INFO - Shutting down...Goodbye!
+2025-02-24 18:57:55,099 - app.logging.logging_config - INFO - Logging system initialized
+2025-02-24 18:57:55,100 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:57:55,106 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:57:55,113 - app.app - INFO - DB session maker initialized.
+2025-02-24 18:57:55,116 - app.app - INFO - Database test query returned: auth_failed_logins
+2025-02-24 18:57:55,117 - app.app - INFO - Lifespan startup complete. Database connection test succeeded.
+2025-02-24 18:58:11,647 - app.app - INFO - Database connections cleaned up successfully.
+2025-02-24 18:58:11,647 - app.app - INFO - Shutting down...Goodbye!
+2025-02-24 18:58:32,836 - app.logging.logging_config - INFO - Logging system initialized
+2025-02-24 18:58:32,837 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-24 18:58:32,843 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-24 18:58:32,849 - app.app - INFO - DB session maker initialized.
+2025-02-24 18:58:32,853 - app.app - INFO - Database test query returned: auth_failed_logins
+2025-02-24 18:58:32,853 - app.app - INFO - Lifespan startup complete. Database connection test succeeded.
+2025-02-24 18:59:16,228 - app.app - INFO - Database connections cleaned up successfully.
+2025-02-24 18:59:16,228 - app.app - INFO - Shutting down...Goodbye!

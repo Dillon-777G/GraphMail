@@ -3,21 +3,20 @@ from typing import Union, Dict
 
 from fastapi import APIRouter, Depends
 
-from app.service.attachment_service import AttachmentService
+from app.service.attachments.attachment_graph_service import AttachmentGraphService
 from app.service.graph.graph_authentication_service import Graph
-from app.responses.attachment_response import AttachmentDownloadResponse
 from app.controllers.fAPI_dependencies.auth_dependency import AuthDependency
 
 logger = logging.getLogger(__name__)
 
 
-def attachment_controller(graph: Graph, attachment_service: AttachmentService) -> APIRouter:
+def attachment_controller(graph: Graph, attachment_graph_service: AttachmentGraphService) -> APIRouter:
     """
     Defines routes for managing email attachments.
 
     Args:
         graph (Graph): The Graph service instance.
-        attachment_service (AttachmentService): Service for handling attachment operations.
+        attachment_graph_service (AttachmentGraphService): Service for handling attachment operations.
 
     Returns:
         APIRouter: The router object for attachment endpoints.
@@ -45,7 +44,7 @@ def attachment_controller(graph: Graph, attachment_service: AttachmentService) -
         if auth_response:
             return auth_response
         
-        attachments = await attachment_service.get_message_attachments(folder_id, message_id)
+        attachments = await attachment_graph_service.get_message_attachments(folder_id, message_id)
         return {
                 "status": "success",
                 "data": [
@@ -60,7 +59,7 @@ def attachment_controller(graph: Graph, attachment_service: AttachmentService) -
             }
 
 
-    @router.get("/{folder_id}/{message_id}/{attachment_id}/download")
+    @router.post("/{folder_id}/{message_id}/{attachment_id}/download")
     async def download_attachment(folder_id: str, message_id: str, attachment_id: str,
      auth_response: Union[Dict[str,str], None] = Depends(auth)):
         """
@@ -82,22 +81,12 @@ def attachment_controller(graph: Graph, attachment_service: AttachmentService) -
         if auth_response:
             return auth_response
         
-        attachment = await attachment_service.download_attachment(folder_id, message_id, attachment_id)
+        db_attachment = await attachment_graph_service.download_attachment(folder_id, message_id, attachment_id)
         
-        # Create metadata dictionary
-        metadata = {
-            "id": attachment["id"],
-            "name": attachment["name"],
-            "content_type": attachment["content_type"],
-            "size": attachment["size"]
+        return {
+            "status": "success",
+            "data": db_attachment
         }
-
-        return AttachmentDownloadResponse(
-            file_content=attachment["content_bytes"],
-            content_type=attachment["content_type"],
-            filename=attachment["name"],
-            metadata=metadata
-        )
 
 
     return router

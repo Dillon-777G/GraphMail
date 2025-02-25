@@ -1,4 +1,4 @@
-from typing import Union, Dict
+from typing import Union, Dict, Any
 import logging
 
 from fastapi import APIRouter, Depends, Body
@@ -22,7 +22,7 @@ def email_controller(
         folder_id: str,
         selection: EmailSelectionDTO = Body(...),
         auth_response: Union[Dict[str,str], None] = Depends(auth)
-    ):
+    ) -> Dict[str, Any]:
         """
         Fetch specific emails by their IDs and return them as DBEmail objects.
 
@@ -40,14 +40,21 @@ def email_controller(
             selection.email_source_ids
         )
 
-        db_emails = await select_email_service.select_and_persist_emails(
+        successful_emails, duplicate_emails, failed_emails = await select_email_service.select_and_persist_emails(
             folder_id=folder_id,
             selection=selection
         )
+
+        total_emails = len(successful_emails) + len(duplicate_emails) + len(failed_emails)
         
         return {
             "status": "success",
-            "data": [email.__dict__ for email in db_emails]
+            "data": {
+                "total_emails": total_emails,
+                "successful": successful_emails,
+                "duplicates": duplicate_emails,
+                "failures": failed_emails
+            }
         }
 
     return router 

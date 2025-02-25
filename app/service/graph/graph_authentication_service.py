@@ -5,6 +5,7 @@ import secrets
 from datetime import datetime, timedelta
 
 from azure.identity import AuthorizationCodeCredential
+from azure.core.exceptions import ClientAuthenticationError
 from msgraph import GraphServiceClient
 
 from app.error_handling.exceptions.authentication_exception import AuthenticationFailedException
@@ -14,8 +15,10 @@ SUMMARY:
 
 I have set this authentication class up to include a state tracker. This state tracking 
 functionality protects us against CSRF and Replay attacks. It also helps the user generally
-by preventing reusing the same Auth data, blocking conflicting auth requests, ensuring
-that only fresh tokens are used, and preventing cache poisoning. I would recommend keeping it in place.
+by preventing reusing the same Auth data, blocking conflicting auth requests, refreshing tokens,
+and allowing for the refresh token to fail gracefully. This is done by clearing the client and 
+credential when the refresh token fails, ensuring that only fresh tokens are used, and preventing
+cache poisoning. I would recommend keeping it in place.
 
 """
 class Graph:
@@ -39,6 +42,8 @@ class Graph:
         self.logger = logging.getLogger(__name__)
         self._state_store: Dict[str, datetime] = {}  # Store states with timestamps
         self.STATE_TIMEOUT = 300  # 5 minutes timeout for states # pylint: disable=invalid-name
+        self.token_expires_at: Optional[datetime] = None
+        self.token_refresh_window = 300  # Refresh token 5 minutes before expiration
 
         # init check
         self .is_loaded()
@@ -144,6 +149,12 @@ class Graph:
             self.client = GraphServiceClient(self.credential, self.config["scopes"])
             self.logger.info("Graph client initialized successfully")
 
+            # Retrieve token details and update expiration time.
+            token_response = self.credential.get_token(*self.config["scopes"])
+            self.token_expires_at = datetime.utcfromtimestamp(token_response.expires_on)
+            
+            self.logger.info("Graph client initialized successfully; token expires at %s", self.token_expires_at)
+
 
         except Exception as e:
             self.logger.error("Failed to exchange code for token: %s", e)
@@ -153,6 +164,42 @@ class Graph:
             raise AuthenticationFailedException(
                 detail="Failed to exchange authorization code for access token."
             ) from e
+
+
+    async def refresh_token_if_needed(self) -> bool:
+        """
+        Refreshes the access token if it's close to expiration.
+        Returns True if the token is still valid or refreshed successfully,
+        and False if the token refresh fails (e.g. due to an expired refresh token).
+        """
+        if not self.credential or not self.token_expires_at:
+            return False
+
+        now = datetime.utcnow()
+        time_remaining = (self.token_expires_at - now).total_seconds()
+        
+        # Only attempt a refresh if the token is within the refresh window.
+        if time_remaining > self.token_refresh_window:
+            self.logger.info("Token is still valid for %s seconds, no refresh needed.", time_remaining)
+            return True
+
+        try:
+            # Refresh the token by calling get_token with unpacked scopes.
+            token_response = await self.credential.get_token(*self.config["scopes"])
+            if token_response.expires_on:
+                self.token_expires_at = datetime.utcfromtimestamp(token_response.expires_on)
+                self.logger.info("Token refreshed successfully; new expiration at %s", self.token_expires_at)
+                return True
+            self.logger.error("Token response did not contain an expiration time.")
+            return False
+        except ClientAuthenticationError as e:
+            self.logger.error("Failed to refresh token: %s", e)
+            if "AADSTS70008" in str(e):
+                self.logger.info("Refresh token expired, clearing credentials to force new login.")
+                self.client = None
+                self.credential = None
+            return False
+
 
 
     async def ensure_authenticated(self, authorization_code: Optional[str] = None, state: Optional[str] = None) -> Dict[str, Any]:
@@ -174,25 +221,43 @@ class Graph:
         """
         self.logger.info("Ensuring Graph client is authenticated.")
 
-        if self.client and self.credential:
-            self.logger.info("Graph client is already authenticated.")
-            return {"authenticated": True, "auth_url": None}
+        has_credentials = bool(self.client and self.credential)
+        has_auth_code = bool(authorization_code)
+        
+        token_valid = False
+        if self.token_expires_at:
+            remaining = (self.token_expires_at - datetime.utcnow()).total_seconds()
+            token_valid = remaining > self.token_refresh_window
 
-        if not authorization_code:
-            auth_url = self.get_authorization_url()
-            return {
-                "authenticated": False,
-                "auth_url": auth_url,
-            }
+        match (has_credentials, has_auth_code, token_valid):
+            # Case 1: We have credentials and the token is valid.
+            case (True, _, True):
+                self.logger.info("Token is valid; no refresh needed.")
+                return {"authenticated": True, "auth_url": None}
+            
+            # Case 2: We have credentials but token is near expiration.
+            case (True, _, False):
+                if await self.refresh_token_if_needed():
+                    self.logger.info("Token refreshed successfully.")
+                    return {"authenticated": True, "auth_url": None}
+                self.logger.info("Token refresh failed; forcing new login.")
+                return {"authenticated": False, "auth_url": self.get_authorization_url()}
+            
+            # Case 3: No credentials and no auth code provided.
+            case (False, False, _):
+                self.logger.info("No credentials and no auth code; initiating login flow.")
+                return {"authenticated": False, "auth_url": self.get_authorization_url()}
+            
+            # Case 4: No credentials, but an auth code is provided.
+            case (False, True, _):
+                try:
+                    await self.exchange_code_for_token(authorization_code, state)
+                    self.logger.info("Successfully authenticated via auth code exchange.")
+                    return {"authenticated": True, "auth_url": None}
+                except AuthenticationFailedException as e:
+                    self.logger.error("Authentication failed: %s", e)
+                    raise
 
-        try:
-            # Exchange the authorization code for a token
-            await self.exchange_code_for_token(authorization_code, state)
-            self.logger.info("Successfully authenticated the Graph client.")
-            return {"authenticated": True, "auth_url": None}
-        except AuthenticationFailedException as e:
-            self.logger.error("Authentication failed: %s", e)
-            raise
 
 
     def is_loaded(self):

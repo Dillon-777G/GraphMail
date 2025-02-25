@@ -1,54 +1,57 @@
-import os
 from contextlib import asynccontextmanager
+import logging
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
-from dotenv import load_dotenv
 
+from app.config.environment_config import EnvironmentConfig
 
-if not load_dotenv():
-    raise FileNotFoundError("Error: .env file not found or failed to load.")
-
-
-def is_running_in_docker():
-    try:
-        with open("/proc/1/cgroup", "rt", encoding="utf-8") as f:
-            return "docker" in f.read()
-    except FileNotFoundError:
-        return False
-
-# Default to local development settings if not set
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD") 
-DB_HOST = os.getenv("DB_HOST_DOCKER") if is_running_in_docker() else os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
-
-# Update URL to use async driver
-DATABASE_URL = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
-# Create async engine
-engine = create_async_engine(
-    DATABASE_URL,
-    pool_size=5,  # Default connection pool size
-    max_overflow=10,  # Allow up to 10 connections beyond pool_size
-    pool_timeout=30,  # Seconds to wait before timing out on getting a connection
-    pool_recycle=1800,  # Recycle connections after 30 minutes to handle stale connections
-)
-
-# Create async session maker
-AsyncSessionLocal = async_sessionmaker(
-    engine, 
-    class_=AsyncSession, 
-    expire_on_commit=False
-)
-
+# Only create the Base class initially
 Base = declarative_base()
+ASYNC_SESSION_LOCAL = None
+logger = logging.getLogger(__name__)
+
+def init_db():
+    """Initialize database connection."""
+    database_url = (
+        f"mysql+aiomysql://{EnvironmentConfig.get('DB_USER')}:{EnvironmentConfig.get('DB_PASSWORD')}"
+        f"@{EnvironmentConfig.get('DB_HOST')}:{EnvironmentConfig.get('DB_PORT')}/{EnvironmentConfig.get('DB_NAME')}"
+    )
+
+    engine = create_async_engine(
+        database_url,
+        pool_size=5,
+        max_overflow=10,
+        pool_timeout=30,
+        pool_recycle=1800,
+    )
+
+    session_maker = async_sessionmaker(
+        engine, 
+        class_=AsyncSession, 
+        expire_on_commit=False
+    )
+
+    # we want the global session maker to be available to the entire app, its just a simpler implementation
+    global ASYNC_SESSION_LOCAL # pylint: disable=global-statement
+    ASYNC_SESSION_LOCAL = session_maker
+
+    return engine, session_maker
 
 @asynccontextmanager
 async def get_db():
-    session = AsyncSessionLocal()
+    """Provides a database session using the globally initialized session maker.
+    This is a context manager that will yield a session to the caller.
+    I am deferring transaction management to the caller. I prefer granular transaction management.
+    """
+    if ASYNC_SESSION_LOCAL is None:
+        raise RuntimeError("Session maker is not initialized. Ensure init_db() is called during startup.")
+    
+    session: AsyncSession = ASYNC_SESSION_LOCAL()
     try:
         yield session
+    except Exception:
+        logger.exception("Error in database session, could not yield session")
+        raise
     finally:
         await session.close()

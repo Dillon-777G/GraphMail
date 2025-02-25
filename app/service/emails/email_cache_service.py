@@ -82,6 +82,7 @@ class EmailCacheService:
             del self.cache[folder_id]
             self.logger.info("Cleared cache for folder %s", folder_id)
 
+    #Unused currently but should probably stay.
     def clear_all_cache(self) -> None:
         """Clear the entire cache"""
         self.cache.clear()

@@ -12,12 +12,21 @@ class AttachmentMetrics(BaseMetrics):
     download_time: Optional[float] = None  # Single duration value
     download_size: Optional[int] = None    # Single size value
     retry_count: int = 0                   # Single retry counter
+    last_error: Optional[str] = None       # Track last error message
+    failed_attachment_id: Optional[str] = None  # Track failed attachment ID
+    failure_count: int = 0                 # Track number of failures
 
     def record_download(self, size: int):
         """Record metrics for a successful download."""
         self.download_size = size
         self.total_bytes_downloaded += size
         self.attachments_processed += 1
+
+    def record_download_failure(self, attachment_id: str, error_message: str):
+        """Record metrics for a failed download attempt."""
+        self.failed_attachment_id = attachment_id
+        self.last_error = error_message
+        self.failure_count += 1
 
     def record_retry(self):
         """Record a retry attempt."""
@@ -51,6 +60,12 @@ class AttachmentMetrics(BaseMetrics):
         logger.info("Total size: %.2f MB", total_mb)
         logger.info("Average speed: %.2f MB/s", avg_speed)
         logger.info("Retries: %d", total_retries)
+        if self.failure_count > 0:
+            logger.info("Failures: %d", self.failure_count)
+            if self.failed_attachment_id:
+                logger.info("Last failed attachment: %s", self.failed_attachment_id)
+            if self.last_error:
+                logger.info("Last error: %s", self.last_error)
         logger.info("Total time: %.2fs", self.processing_time)
         logger.info("Current phase: %s", self.current_phase)
-        logger.info("%s\n", separator)
+        logger.info("%s\n\n", separator)

@@ -21,17 +21,18 @@ class AuthDependency:
             )
 
         try:
-            # If already authenticated, return None (continue request)
-            if self.graph.client and self.graph.credential:
-                return None
+            # Always check authentication status first
+            auth_status = await self.graph.ensure_authenticated()
+            if not auth_status["authenticated"]:
+                self.logger.info("User not authenticated or token expired, redirecting to auth URL.")
+                return auth_status
 
             auth_code = request.query_params.get("code")
             state = request.query_params.get("state")
-            self.logger.debug(f"State in auth dep: {state}")
+            self.logger.debug("State in auth dep: %s", state)
 
             if auth_code and state:
                 self.logger.debug("Auth callback detected - Code and State present.")
-
                 auth_status = await self.graph.ensure_authenticated(auth_code, state)
 
                 if auth_status["authenticated"]:
@@ -39,17 +40,9 @@ class AuthDependency:
                     return None  # Continue request
 
                 self.logger.warning("Authentication failed despite valid code and state.")
-                return {
-                    "status": "Authentication error",
-                    "auth_url": auth_status["auth_url"],
-                }
+                return auth_status
 
-            # If not authenticated and no code/state, redirect to auth URL
-            self.logger.info("User not authenticated, redirecting to auth URL.")
-            return {
-                "status": "Authentication required",
-                "auth_url": self.graph.get_authorization_url(),
-            }
+            return None  # Continue request - we're authenticated
 
         except Exception as e:
             self.logger.error("Authentication error: %s", str(e))
