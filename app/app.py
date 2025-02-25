@@ -145,6 +145,7 @@ def init_app() -> FastAPI:
     ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
                                             
                 """)
+    return app_init
 
 
 def create_services(graph, graph_translator, repositories):

@@ -6,7 +6,6 @@ from app.service.graph.graph_authentication_service import Graph
 from app.service.session_store.session_store_service import SessionStore
 from app.error_handling.exceptions.authentication_exception import AuthenticationFailedException
 
-
 def auth_controller(graph: Graph, session_store: SessionStore) -> APIRouter:
     router = APIRouter()
     logger = logging.getLogger(__name__)
@@ -17,6 +16,7 @@ def auth_controller(graph: Graph, session_store: SessionStore) -> APIRouter:
         Provides the authorization URL for the user to initiate authentication.
         """
         auth_url = graph.get_authorization_url()
+        logger.info("Initiating auth with URL: %s", auth_url)
         return {
             "status": "success",
             "data": {
@@ -28,10 +28,7 @@ def auth_controller(graph: Graph, session_store: SessionStore) -> APIRouter:
     async def auth_callback(request: Request):
         """
         Handles the callback after user authentication.
-        Exchanges the authorization code for tokens and confirms authentication.
-
-        Raises:
-            AuthenticationFailedException: If authentication fails or code is missing
+        Exchanges the authorization code for tokens and redirects to bridge URL.
         """
         logger.info("Received auth callback, time to send you back to northstar.")
         authorization_code = request.query_params.get('code')
@@ -63,7 +60,7 @@ def auth_controller(graph: Graph, session_store: SessionStore) -> APIRouter:
         # Clean up the session
         session_store.remove_session(state)
         logger.info("Session cleaned up, redirecting to bridge URL with order ID: %s", order_id)
-        # Redirect to bridge URL with order ID, not implemented yet
+        # Redirect to bridge URL with order ID, work in progress
         redirect_url = f"http://localhost:3000/{order_id}"
         return RedirectResponse(url=redirect_url)
 

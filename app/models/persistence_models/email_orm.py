@@ -1,6 +1,9 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
 from app.persistence.base_connection import Base
 
+"""
+Based on an outdated model, working on a decomposition currently
+"""
 class DBEmail(Base):
     __tablename__ = "tbl_email"
 
