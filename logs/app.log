@@ -1,0 +1,25 @@
+2025-02-25 11:42:28,441 - app.logging.logging_config - INFO - Logging system initialized
+2025-02-25 11:42:28,443 - app.service.graph.graph_authentication_service - INFO - env has loaded successfully, proceeding
+2025-02-25 11:42:28,450 - app.app - INFO - 
+                
+                
+    ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗
+    ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║
+    ██║  ███╗██████╔╝███████║██████╔╝███████║
+    ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║
+    ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║
+    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝
+                                            
+    ███╗   ███╗ █████╗ ██╗██╗                
+    ████╗ ████║██╔══██╗██║██║                
+    ██╔████╔██║███████║██║██║                
+    ██║╚██╔╝██║██╔══██║██║██║                
+    ██║ ╚═╝ ██║██║  ██║██║███████╗           
+    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
+                                            
+                
+2025-02-25 11:42:28,457 - app.app - INFO - DB session maker initialized.
+2025-02-25 11:42:28,460 - app.app - INFO - Database test query returned: auth_failed_logins
+2025-02-25 11:42:28,461 - app.app - INFO - Lifespan startup complete. Database connection test succeeded.
+2025-02-25 11:44:37,084 - app.app - INFO - Database connections cleaned up successfully.
+2025-02-25 11:44:37,084 - app.app - INFO - Shutting down...Goodbye!

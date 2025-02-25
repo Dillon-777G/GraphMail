@@ -4,10 +4,17 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"  # Map container port 5000 to host port 5000
+      - "5000:5000"
     environment:
-      AZURE_CLIENT_ID: "${AZURE_CLIENT_ID}"
-      AZURE_CLIENT_SECRET: "${AZURE_CLIENT_SECRET}"
-      AZURE_TENANT_ID: "${AZURE_TENANT_ID}"
-      AZURE_REDIRECT_URI: "${AZURE_REDIRECT_URI}"
-      AZURE_GRAPH_USER_SCOPES: "${AZURE_GRAPH_USER_SCOPES}"
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID}
+      - AZURE_REDIRECT_URI=${AZURE_REDIRECT_URI}
+      - AZURE_GRAPH_USER_SCOPES=${AZURE_GRAPH_USER_SCOPES}
+      - DB_HOST=${DB_HOST_DOCKER}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
