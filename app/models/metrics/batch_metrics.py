@@ -15,6 +15,9 @@ class BatchMetrics(BaseMetrics):
       - A single final metrics log output (via log_final_metrics())
       - Frontend progress updates (via get_progress_info())
     """
+
+    # Folder details
+    folder_id: str = Field(default="None")
     
     # Counters and totals
     pages_fetched: int = Field(default=0)
@@ -102,8 +105,9 @@ class BatchMetrics(BaseMetrics):
         total_time = time.time() - self.start_time
         separator = "-" * 40
 
-        logger.info("\n%s", separator)
+        logger.info("\n\n%s", separator)
         logger.info("--- Final Operation Metrics ---")
+        logger.info("Folder ID: %s", self.folder_id)
         logger.info("Emails processed: %d (processing took %.2fs)",
                     self.emails_processed, self.processing_time)
         if stats:
@@ -156,7 +160,6 @@ class BatchMetrics(BaseMetrics):
             "progress": self.calculate_overall_progress(),
             "total_emails": self.total_count,
             "processed_emails": self.emails_processed,
-            "current_phase_progress": self.phase_progress,
             "pages_fetched": self.pages_fetched,
             "ids_translated": self.ids_translated
         }

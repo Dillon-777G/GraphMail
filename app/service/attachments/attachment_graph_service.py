@@ -5,18 +5,29 @@ from typing import List
 from msgraph.generated.models.file_attachment import FileAttachment
 from msgraph.generated.users.item.messages.messages_request_builder import MessagesRequestBuilder
 from kiota_abstractions.base_request_configuration import RequestConfiguration
+from kiota_abstractions.api_error import APIError
 
 
 from app.error_handling.exceptions.email_attachment_exception import EmailAttachmentException
 from app.error_handling.exceptions.graph_response_exception import GraphResponseException
 from app.models.email_attachment import EmailAttachment
-from app.utils.retry_utils import RetryUtils
+from app.service.retry_service import RetryService
 from app.models.retries.retry_context import RetryContext
 from app.models.retries.retry_enums import RetryProfile
 from app.models.metrics.attachment_metrics import AttachmentMetrics
 from app.service.graph.graph_authentication_service import Graph
+from app.service.emails.email_crud_service import EmailCRUDService
+from app.service.attachments.attachment_crud_service import AttachmentCRUDService
+from app.utils.attachment_utils import AttachmentUtils
+from app.service.attachments.attachment_file_service import AttachmentFileService
 
 """
+SUMMARY:
+
+
+This class is responsible for getting the attachment responses from graph API
+
+
 NOTE: Attachment objects in Microsoft Graph already support
  immutable IDs, as inferred from observed API behavior.
 
@@ -30,14 +41,21 @@ As a result, ID translation has been omitted.
 For more details on fileAttachment objects, refer to the
  email_attachment class or the Microsoft Graph documentation.
 """
-class AttachmentService:
-    def __init__(self, graph: Graph):
+class AttachmentGraphService:
+    def __init__(self, graph: Graph, email_crud_service: EmailCRUDService, 
+                 attachment_crud_service: AttachmentCRUDService,
+                 attachment_file_service: AttachmentFileService):
         self.graph = graph
         self.logger = logging.getLogger(__name__)
-        self.retry_utils = RetryUtils(retry_profile=RetryProfile.FAST)
+        self.retry_service = RetryService(retry_profile=RetryProfile.FAST)
+        self.email_crud_service = email_crud_service 
+        self.attachment_crud_service = attachment_crud_service
+        self.attachment_file_service = attachment_file_service
+
+
 
     async def download_attachment(self, folder_id: str,
-                                    message_id: str, attachment_id: str) -> dict:
+                                message_id: str, attachment_id: str) -> dict:
         """
         Download a specific file attachment from a message.
 
@@ -48,7 +66,6 @@ class AttachmentService:
 
         Returns:
             dict: Contains attachment metadata and content for file download.
-            NOTE: the metadata is stored in the response headers.
 
         Raises:
             EmailAttachmentException: If the attachment is not found or is an
@@ -59,7 +76,8 @@ class AttachmentService:
         try:
             # Start processing time is tracked by metrics.start_processing()
             raw_attachment = await self.__get_attachment(folder_id, message_id, attachment_id)
-            processed_data = self.__process_attachment(raw_attachment)
+            email_id = await self.email_crud_service.get_email_id_by_graph_message_id(message_id)
+            processed_data = await self.__process_attachment(raw_attachment, email_id)
             
             # Record metrics after successful processing
             metrics.record_download(
@@ -67,7 +85,17 @@ class AttachmentService:
             )
             return processed_data
             
+        except APIError as e:
+            # Record API-specific failures with detailed error info
+            error_message = f"API Error: {str(e.message if e.message else str(e))}"
+            metrics.record_download_failure(attachment_id, error_message)
+            raise EmailAttachmentException(
+                detail=f"Attachment {attachment_id} not found or cannot be accessed.",
+                attachment_id=attachment_id,
+                status_code=404
+            ) from e
         except Exception as e:
+            # Record all other failures
             metrics.record_download_failure(attachment_id, str(e))
             raise
         finally:
@@ -77,8 +105,9 @@ class AttachmentService:
 
 
 
+
     async def __get_attachment(self, folder_id: str,
-                                message_id: str, attachment_id: str) -> FileAttachment:
+                             message_id: str, attachment_id: str) -> FileAttachment:
         """
         Calls the get attachment function and handles exceptions properly.
 
@@ -92,6 +121,7 @@ class AttachmentService:
 
         Raises:
             EmailAttachmentException: If the attachment is not found or cannot be retrieved
+            APIError: If there's an API-specific error (allowing parent to handle)
         """
         async def fetch():
             return await (
@@ -109,20 +139,25 @@ class AttachmentService:
                 detail=detail,
                 attachment_id=attachment_id,
                 status_code=status_code
-            )
+            ),
         )
 
         try:
-            return await self.retry_utils.retry_operation(retry_context)
+            return await self.retry_service.retry_operation(retry_context)
+        except APIError:
+            # Let APIError propagate to parent for handling
+            raise
         except Exception as e:
             raise EmailAttachmentException(
-                detail=f"Attachment {attachment_id} not found or cannot be accessed.",
+                detail=f"Error retrieving attachment: {str(e)}",
                 attachment_id=attachment_id,
-                status_code=404
+                status_code=500
             ) from e
 
-    # noinspection PyMethodMayBeStatic
-    def __process_attachment(self, raw_attachment: FileAttachment) -> dict:
+
+
+
+    async def __process_attachment(self, raw_attachment: FileAttachment, email_id: int) -> dict:
         """
         Process a raw attachment and validate it.
 
@@ -138,13 +173,29 @@ class AttachmentService:
         attachment = EmailAttachment.graph_email_attachment(raw_attachment)
         attachment.is_valid_file_attachment()
 
-        data = attachment.model_dump()
-        if data["content_bytes"]:
+        # Create and save DB record
+        db_attachment = AttachmentUtils.attachment_to_db_attachment(attachment, email_id)
+        print(f"DB Attachment url: {db_attachment.url}")
+        await self.attachment_crud_service.save_attachment(db_attachment)
+
+        content_bytes = attachment.content_bytes
+        data = {
+            column.name: getattr(db_attachment, column.name)
+            for column in db_attachment.__table__.columns
+        }
+        if content_bytes:
             try:
-                data["content_bytes"] = base64.b64decode(data["content_bytes"])
+                decoded_content = base64.b64decode(content_bytes)
+
+                # Add logging to debug
+                self.logger.debug("Content type: %s", raw_attachment.content_type)
+
+                # Save the file to the filesystem
+                await self.attachment_file_service.save_attachment_file(db_attachment, decoded_content)
+
             except Exception as e:
                 raise EmailAttachmentException(
-                    detail=f"Failed to decode attachment content for {attachment.id}: {str(e)}",
+                    detail=f"Failed to process attachment content for {attachment.id}: {str(e)}",
                     attachment_id=attachment.id,
                     status_code=500
                 ) from e
@@ -209,10 +260,11 @@ class AttachmentService:
             operation=fetch,
             error_msg=f"Failed to retrieve attachments for message {message_id}",
             custom_exception=EmailAttachmentException
+
         )
 
         try:
-            return await self.retry_utils.retry_operation(retry_context)
+            return await self.retry_service.retry_operation(retry_context)
         except GraphResponseException as e:
             self.logger.error("Failed to retrieve attachments for message %s: %s", message_id, str(e))
             raise

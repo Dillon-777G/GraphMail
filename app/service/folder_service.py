@@ -11,7 +11,7 @@ from app.utils.graph_utils import GraphUtils
 from app.service.graph.graph_authentication_service import Graph
 from app.error_handling.exceptions.folder_exception import FolderException
 from app.error_handling.exceptions.graph_response_exception import GraphResponseException
-from app.utils.retry_utils import RetryUtils
+from app.service.retry_service import RetryService
 from app.models.retries.retry_context import RetryContext
 from app.models.retries.retry_enums import RetryProfile
 from app.models.metrics.folder_metrics import FolderMetrics
@@ -32,7 +32,7 @@ class FolderService:
     def __init__(self, graph: Graph):
         self.graph = graph
         self.logger = logging.getLogger(__name__)
-        self.retry_utils = RetryUtils(retry_profile=RetryProfile.STANDARD)
+        self.retry_service = RetryService(retry_profile=RetryProfile.STANDARD)
 
 
 
@@ -50,7 +50,7 @@ class FolderService:
         metrics = self.__start_metrics()
         
         try:
-            folders = await self.retry_utils.retry_operation(
+            folders = await self.retry_service.retry_operation(
                 RetryContext(
                     operation=self.__fetch_root_folders,
                     error_msg="Failed to retrieve root folders",
@@ -76,7 +76,7 @@ class FolderService:
         finally:
             metrics.end_processing()
             metrics.current_phase = "complete"
-            metrics.log_metrics_retrieval(self.logger, "Get Root Folders", "root")
+            metrics.log_metrics_retrieval(self.logger, "Get Root Folders")
 
 
 
@@ -85,10 +85,10 @@ class FolderService:
         """
         Get all child folders for a specific folder ID.
         """
-        metrics = self.__start_metrics()  # Returns FolderMetrics.
+        metrics = self.__start_metrics()
         
         try:
-            folders = await self.retry_utils.retry_operation(
+            folders = await self.retry_service.retry_operation(
                 RetryContext(
                     operation=lambda: self.__fetch_child_folders(folder_id),
                     error_msg=f"Failed to retrieve child folders for folder {folder_id}",
@@ -99,25 +99,31 @@ class FolderService:
                     )
                 )
             )
-            for folder in folders:
-                metrics.record_retrieval(folder.child_folder_count)
+            
+            # Only process metrics if we found child folders
+            if folders:
+                for folder in folders:
+                    metrics.record_retrieval(folder.child_folder_count, folder.id, folder.parent_folder_id, folder.display_name)
+                metrics.end_processing()
+                metrics.current_phase = "complete"
+                metrics.log_metrics_retrieval(self.logger, "Get Child Folders")
+                
             return folders
 
         except Exception as e:
             self.logger.error("Error retrieving child folders for folder ID %s: %s", folder_id, str(e))
             metrics.record_retrieval_failure(folder_id, str(e))
+            metrics.end_processing()
+            metrics.current_phase = "error"
+            metrics.log_metrics_retrieval(self.logger, "Get Child Folders")
             raise FolderException(
                 detail=f"Failed to retrieve child folders: {str(e)}",
                 folder_id=folder_id,
                 status_code=500
             ) from e
-        finally:
-            metrics.end_processing()
-            metrics.current_phase = "complete"
-            metrics.log_metrics_retrieval(self.logger, "Get Child Folders", folder_id)
 
 
-            
+
 
     async def get_folder(self, folder_id: str) -> Folder:
         """
@@ -126,7 +132,7 @@ class FolderService:
         metrics = self.__start_metrics()  # This returns an instance of FolderMetrics.
         
         try:
-            folder = await self.retry_utils.retry_operation(
+            folder = await self.retry_service.retry_operation(
                 RetryContext(
                     operation=lambda: self.graph.client.me.mail_folders.by_mail_folder_id(folder_id).get(),
                     error_msg=f"Failed to retrieve folder {folder_id}",
@@ -138,7 +144,7 @@ class FolderService:
                 )
             )
             folder = Folder.from_graph_folder(folder)
-            metrics.record_retrieval(folder.child_folder_count)
+            metrics.record_retrieval(folder.child_folder_count, folder.id, folder.parent_folder_id, folder.display_name)
             self.logger.info("Retrieved folder: %s", folder.display_name)
             return folder
 
@@ -153,7 +159,7 @@ class FolderService:
         finally:
             metrics.end_processing()
             metrics.current_phase = "complete"
-            metrics.log_metrics_retrieval(self.logger, "Get Folder", folder_id)
+            metrics.log_metrics_retrieval(self.logger, "Get Folder")
                 
 
 

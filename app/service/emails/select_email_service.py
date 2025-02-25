@@ -14,8 +14,8 @@ from app.error_handling.exceptions.email_exception import EmailException
 from app.error_handling.exceptions.id_translation_exception import IdTranslationException
 from app.error_handling.exceptions.email_persistence_exception import EmailPersistenceException
 
-from app.utils.retry_utils import RetryUtils
-from app.utils.retry_utils import RetryContext
+from app.service.retry_service import RetryService
+from app.models.retries.retry_context import RetryContext
 
 from app.repository.email_repository import EmailRepository
 from app.utils.email_utils import EmailUtils
@@ -44,7 +44,7 @@ class SelectEmailService:
         self.email_repository = email_repository
         self.paginated_email_service = paginated_email_service
         self.logger = logging.getLogger(__name__)
-        self.retry_utils = RetryUtils(retry_profile=RetryProfile.STANDARD)
+        self.retry_service = RetryService(retry_profile=RetryProfile.STANDARD)
         self.max_messages = 50
 
 
@@ -96,7 +96,7 @@ class SelectEmailService:
                 
 
             # Persist to database
-            return await self.email_repository.bulk_create_emails(db_emails)
+            return await self.email_repository.bulk_save_emails(db_emails)
 
         except EmailPersistenceException as e:
             if e.is_duplicate_error():  # Using our new method
@@ -184,6 +184,6 @@ class SelectEmailService:
                 error_msg="Failed to translate IDs",
                 custom_exception=IdTranslationException
             )
-        translated_ids = await self.retry_utils.retry_operation(translate_context)
+        translated_ids = await self.retry_service.retry_operation(translate_context)
         id_mapping = {item["source_id"]: item["target_id"] for item in translated_ids}
         return id_mapping

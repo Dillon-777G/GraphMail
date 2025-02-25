@@ -13,9 +13,6 @@ class RetryProfile(Enum):
 
     # More patient retries for batch operations
     BATCH = "BATCH"
-    
-    # Aggressive retries for critical operations
-    CRITICAL = "CRITICAL"
 
 @dataclass
 class RetryConfig:

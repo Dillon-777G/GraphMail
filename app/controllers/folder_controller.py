@@ -7,12 +7,14 @@ from app.service.folder_service import FolderService
 from app.service.graph.graph_authentication_service import Graph
 from app.service.emails.paginated_email_service import PaginatedEmailService
 from app.controllers.fAPI_dependencies.auth_dependency import AuthDependency
+from app.service.session_store.session_store_service import SessionStore
 
 
 def folder_controller(
     graph: Graph, 
     folder_service: FolderService, 
-    paginated_email_service: PaginatedEmailService
+    paginated_email_service: PaginatedEmailService, 
+    session_store: SessionStore
 ) -> APIRouter:
     router = APIRouter()
     auth = AuthDependency(graph)
@@ -20,6 +22,7 @@ def folder_controller(
 
     @router.get("/root")
     async def list_root_folders(
+        order_id: int, 
         auth_response: Union[Dict[str,str], None] = Depends(auth)
     ):
         """
@@ -31,9 +34,12 @@ def folder_controller(
         the email bridge.
         """
         if auth_response:
+            # Store order_id with the state before redirecting
+            state = auth_response["auth_url"].split("state=")[1].split("&")[0]
+            session_store.store_order_id(state, order_id)
             return auth_response
 
-        logger.info("Received request to list root folders")
+        logger.info("Received request to list root folders for order %s", order_id)
         folders = await folder_service.get_root_folders()
         return {
             "status": "success",
@@ -43,6 +49,7 @@ def folder_controller(
     @router.get("/{folder_id}/contents")
     async def get_folder_contents(
         folder_id: str,
+        subject: Union[str, None] = Query(None, description="Filter by subject"),
         page: int = Query(1, ge=1, description="Page number, starting at 1"),
         per_page: int = Query(25, ge=1, le=100, description="Number of emails per page"),
         auth_response: Union[Dict[str,str], None] = Depends(auth)
@@ -77,15 +84,17 @@ def folder_controller(
         # Retrieve paginated emails.
         # It is assumed that get_folder_emails_by_id has been modified to accept pagination parameters.
         paginated_emails = await paginated_email_service.get_paginated_emails_by_folder_id(
-            folder_id, page=page, per_page=per_page
+            folder_id, page=page, per_page=per_page, subject=subject
         )
 
         # The paginated_emails is assumed to be a dict containing:
         #   - "emails": List of email objects
-        #   - "total": Total number of emails in the folder
+        #   - "email_count": len(emails)
+        #   - "total_elements": Total number of emails in the folder
         #   - "total_pages": Total number of pages available
-        emails = paginated_emails.get("emails", [])
-        total = paginated_emails.get("total", 0)
+        emails = paginated_emails.get("data", [])
+        email_count = paginated_emails.get("elements_on_page", 0)
+        total_elements = paginated_emails.get("total_elements", 0)
         total_pages = paginated_emails.get("total_pages", 1)
 
         return {
@@ -97,7 +106,8 @@ def folder_controller(
                 "pagination": {
                     "page": page,
                     "per_page": per_page,
-                    "total": total,
+                    "elements_on_page": email_count,
+                    "total_elements": total_elements,
                     "total_pages": total_pages
                 }
             }

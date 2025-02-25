@@ -14,7 +14,7 @@ from app.models.email import Email
 from app.error_handling.exceptions.email_exception import EmailException
 from app.error_handling.exceptions.id_translation_exception import IdTranslationException
 from app.models.metrics.batch_metrics import BatchMetrics
-from app.utils.retry_utils import RetryUtils
+from app.service.retry_service import RetryService
 from app.models.retries.retry_enums import RetryProfile
 from app.models.retries.retry_context import RetryContext
 
@@ -28,7 +28,7 @@ class EmailDownloadService:
         self.graph = graph
         self.graph_translator = graph_translator
         self.logger = logging.getLogger(__name__)
-        self.retry_utils = RetryUtils(retry_profile=RetryProfile.BATCH)
+        self.retry_service = RetryService(retry_profile=RetryProfile.STANDARD)
         
         # Configurable parameters
         self.config = {
@@ -65,6 +65,7 @@ class EmailDownloadService:
             - Finally, the list of Email objects.
         """
         metrics = self.__start_metrics()
+        metrics.folder_id = folder_id
         
         try:
             messages = []
@@ -218,7 +219,7 @@ class EmailDownloadService:
             error_recorder=lambda: metrics.record_page_error() if metrics else None,
             custom_exception=EmailException
         )
-        return await self.retry_utils.retry_operation(retry_context)
+        return await self.retry_service.retry_operation(retry_context)
 
 
 
@@ -277,7 +278,7 @@ class EmailDownloadService:
             )
             
             try:
-                results = await self.retry_utils.retry_operation(retry_context)
+                results = await self.retry_service.retry_operation(retry_context)
                 for item in results:
                     id_mapping[item["source_id"]] = item["target_id"]
                 metrics.ids_translated += len(results)

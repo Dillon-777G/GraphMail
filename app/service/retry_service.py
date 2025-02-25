@@ -6,6 +6,8 @@ from typing import TypeVar
 
 from sqlalchemy.exc import IntegrityError
 
+from kiota_abstractions.api_error import APIError
+
 from app.models.retries.retry_context import RetryContext
 from app.models.retries.retry_enums import RetryProfile, RetryConfigurations
 
@@ -21,7 +23,7 @@ It is designed with a catch all exception block to make it widely usable.
 """
 T = TypeVar('T')
 
-class RetryUtils:
+class RetryService:
     def __init__(self, retry_profile: RetryProfile = RetryProfile.STANDARD):
         config = RetryConfigurations.get_config(retry_profile)
         self.max_retries = config.max_retries
@@ -56,6 +58,11 @@ class RetryUtils:
             Exception: If operation fails after all retries
         """
         start_time = time.time()
+
+        abort_exceptions = [APIError, IntegrityError]
+        if context.abort_on_exceptions:
+            abort_exceptions.extend(context.abort_on_exceptions)
+        context.abort_on_exceptions = abort_exceptions
         
         for attempt in range(self.max_retries):
             try:
