@@ -18,6 +18,7 @@ from app.service.retry_service import RetryService
 from app.models.retries.retry_context import RetryContext
 
 from app.repository.email_repository import EmailRepository
+from app.repository.email_recipient_repository import EmailRecipientRepository
 from app.utils.email_utils import EmailUtils
 
 
@@ -37,11 +38,13 @@ class SelectEmailService:
         graph: Graph,
         graph_translator: GraphIDTranslator,
         email_repository: EmailRepository,
+        email_recipient_repository: EmailRecipientRepository,
         paginated_email_service: PaginatedEmailService
     ):
         self.graph = graph
         self.graph_translator = graph_translator
         self.email_repository = email_repository
+        self.email_recipient_repository = email_recipient_repository
         self.paginated_email_service = paginated_email_service
         self.logger = logging.getLogger(__name__)
         self.retry_service = RetryService(retry_profile=RetryProfile.STANDARD)
@@ -51,7 +54,8 @@ class SelectEmailService:
 
 
     async def select_and_persist_emails(
-        self, folder_id: str,
+        self, 
+        folder_id: str,
         selection: EmailSelectionDTO
     ) -> List[DBEmail]:
         """
@@ -82,10 +86,10 @@ class SelectEmailService:
             id_mapping_dict = await self._translate_ids_parallel(selection)
             self._validate_id_mappings(id_mapping_dict, emails)
             
-            # Convert to DBEmail objects
+            # First convert and save emails
             db_emails = []
             for email in emails:
-                immutable_id = id_mapping_dict[email.source_id]  # We can safely index now
+                immutable_id = id_mapping_dict[email.source_id]
                 db_email = EmailUtils.email_to_db_email(
                     email=email,
                     selection=selection,
@@ -93,13 +97,31 @@ class SelectEmailService:
                 )
                 db_emails.append(db_email)
 
-                
+            print(f"DB Emails: {db_emails}")
 
-            # Persist to database
-            return await self.email_repository.bulk_save_emails(db_emails)
+            successful_emails, duplicate_emails, failed_emails = await self.email_repository.bulk_save_emails(db_emails)
+
+            # Extract and save recipients for successful emails
+            all_recipients = []
+            if successful_emails:
+                all_recipients = EmailUtils.extract_recipients_from_init_response_emails(emails, successful_emails)
+                # Save recipients - any failure here will raise an exception
+                if all_recipients:
+                    await self.email_recipient_repository.bulk_save_recipients(all_recipients)
+                else:
+                    self.logger.error("No recipients to save for successful emails")
+                    preview = successful_emails[:10]
+                    self.logger.error(f"First 10 successful emails for debugging: {[str(email) for email in preview]}") # pylint: disable=logging-fstring-interpolation
+
+            
+            successful_email_ids = [email.email_id for email in successful_emails]
+            duplicate_email_ids = [email.email_id for email in duplicate_emails]
+            failed_email_ids = [email.email_id for email in failed_emails]
+
+            return successful_email_ids, duplicate_email_ids, failed_email_ids
 
         except EmailPersistenceException as e:
-            if e.is_duplicate_error():  # Using our new method
+            if e.is_duplicate_error():
                 self.logger.warning("Attempted to persist duplicate emails: %s", e.message_ids)
             raise
         except Exception as e:

@@ -32,7 +32,7 @@ from app.service.attachments.attachment_crud_service import AttachmentCRUDServic
 
 from app.repository.email_repository import EmailRepository
 from app.repository.attachment_repository import AttachmentRepository
-
+from app.repository.email_recipient_repository import EmailRecipientRepository
 from app.error_handling.exception_config import get_exception_handlers
 from app.error_handling.exception_handler_manager import ExceptionHandlerManager
 
@@ -118,6 +118,7 @@ def init_app() -> FastAPI:
     # Initialize repositories
     repositories = {
         'email': EmailRepository(),
+        'email_recipient': EmailRecipientRepository(),
         'attachment': AttachmentRepository()
     }
 
@@ -165,10 +166,14 @@ def create_services(graph, graph_translator, repositories):
             folder_service=FolderService(graph),
             download_email_service=EmailDownloadService(graph, graph_translator),
             email_cache_service=EmailCacheService(),
-            email_repository=repositories['email']
+            email_repository=repositories['email'],
+            email_recipient_repository=repositories['email_recipient']
         ),
         'select_email': SelectEmailService(
-            graph, graph_translator, repositories['email'], PaginatedEmailService(graph)
+            graph, graph_translator,
+            repositories['email'],
+            repositories['email_recipient'],
+            PaginatedEmailService(graph)
         ),
         'session_store': SessionStore()
     }

@@ -3,8 +3,9 @@ import logging
 
 import pymysql
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from app.persistence.base_connection import get_db
 from sqlalchemy import select
+
+from app.persistence.base_connection import get_db
 
 from app.models.persistence_models.email_orm import DBEmail
 from app.error_handling.exceptions.email_persistence_exception import EmailPersistenceException
@@ -42,7 +43,7 @@ class EmailRepository:
 
 
 
-    async def bulk_save_emails(self, emails: List[DBEmail]) -> Tuple[List[str], List[str], List[str]]:
+    async def bulk_save_emails(self, emails: List[DBEmail]) -> Tuple[List[DBEmail], List[DBEmail], List[DBEmail]]:
         """Bulk save emails to the database."""
         try:
             successful_emails, duplicate_emails, failed_emails = await self._execute_persist(emails)
@@ -96,8 +97,8 @@ class EmailRepository:
         """
         async with get_db() as session:
             successfully_persisted = []
-            duplicate_email_ids = []
-            failed_email_ids = []
+            duplicate_emails = []
+            failed_emails = []
             
             for email in emails:
                 try:
@@ -105,22 +106,21 @@ class EmailRepository:
                     await session.flush()
                     await session.commit()
                     await session.refresh(email)
-                    successfully_persisted.append(email.graph_message_id)
-                    #TODO: Should we log the entire email object?
+                    successfully_persisted.append(email)
                 except IntegrityError as e:
                     await session.rollback()
                     if isinstance(e.orig, pymysql.err.IntegrityError) and e.orig.args[0] == RepositoryConstants.MYSQL_DUPLICATE_ENTRY_ERROR:
-                        self.logger.info("Skipping duplicate email: %s", email.graph_message_id)
-                        duplicate_email_ids.append(email.graph_source_id)
+                        self.logger.info("Skipping duplicate email: %s", email)
+                        duplicate_emails.append(email)
                     else:
                         self.logger.error("Failed to persist email: %s", email)
-                        failed_email_ids.append(email.graph_source_id)
+                        failed_emails.append(email)
                 except Exception:
                     await session.rollback()
                     self.logger.error("Failed with an unknown error, aborting operation. Last email processed: %s", email)
                     raise
             
-            return successfully_persisted, duplicate_email_ids, failed_email_ids
+            return successfully_persisted, duplicate_emails, failed_emails
 
 
     async def get_email_id_by_graph_message_id(self, graph_message_id: str) -> int:

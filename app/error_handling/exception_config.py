@@ -10,6 +10,7 @@ from app.error_handling.exceptions.graph_response_exception import GraphResponse
 from app.error_handling.exceptions.recursive_email_exception import RecursiveEmailException
 from app.error_handling.exceptions.email_persistence_exception import EmailPersistenceException
 from app.error_handling.exception_handler_manager import ExceptionHandlerManager
+from app.error_handling.exceptions.db_email_recipient_exception import DBEmailRecipientException
 
 def get_exception_handlers(handler: ExceptionHandlerManager) -> dict:
     """
@@ -30,4 +31,5 @@ def get_exception_handlers(handler: ExceptionHandlerManager) -> dict:
         Exception: handler.handle_global_error,
         ValueError: handler.handle_value_error,
         ClientAuthenticationError: handler.handle_client_authentication_error,
+        DBEmailRecipientException: handler.handle_db_email_recipient_error,
     } 

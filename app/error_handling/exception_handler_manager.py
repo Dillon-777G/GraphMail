@@ -14,6 +14,7 @@ from app.error_handling.handlers.not_found_handler import NotFoundHandler
 from app.error_handling.handlers.no_result_handler import NoResultHandler
 from app.error_handling.handlers.value_error_handler import ValueErrorHandler
 from app.error_handling.handlers.client_authentication_handler import ClientAuthenticationHandler
+from app.error_handling.handlers.db_email_recipient_handler import DBEmailRecipientHandler
 
 class ExceptionHandlerManager:
     """Coordinates all exception handlers by initializing and delegating to them."""
@@ -34,6 +35,7 @@ class ExceptionHandlerManager:
             'no_result': NoResultHandler(),
             'value_error': ValueErrorHandler(),
             'client_auth': ClientAuthenticationHandler(),
+            'db_email_recipient': DBEmailRecipientHandler(),
         }
 
     async def handle_authentication_error(self, request: Request, exc):
@@ -79,3 +81,6 @@ class ExceptionHandlerManager:
 
     async def handle_client_authentication_error(self, request: Request, exc):
         return await self.handlers['client_auth'].handle_client_authentication_error(request, exc)
+
+    async def handle_db_email_recipient_error(self, request: Request, exc):
+        return await self.handlers['db_email_recipient'].handle_db_email_recipient_error(request, exc)

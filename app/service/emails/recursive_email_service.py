@@ -12,21 +12,22 @@ from app.service.emails.email_cache_service import EmailCacheService
 from app.repository.email_repository import EmailRepository
 from app.models.dto.recursive_email_request_dto import RecursiveEmailRequestDTO
 from app.utils.email_utils import EmailUtils
-
+from app.repository.email_recipient_repository import EmailRecipientRepository
 class RecursiveEmailService:
     def __init__(
         self, 
         folder_service: FolderService, 
         download_email_service: EmailDownloadService,
         email_cache_service: EmailCacheService,
-        email_repository: EmailRepository
+        email_repository: EmailRepository,
+        email_recipient_repository: EmailRecipientRepository
     ):
         self.folder_service = folder_service
         self.download_email_service = download_email_service
         self.logger = logging.getLogger(__name__)
         self.email_cache_service = email_cache_service
         self.email_repository = email_repository
-
+        self.email_recipient_repository = email_recipient_repository
 
         
 
@@ -50,23 +51,49 @@ class RecursiveEmailService:
             
             # Handle persistence with request data
             if all_emails:
+                # First convert and save emails
                 db_emails = [EmailUtils.email_to_db_email_recursive(email, request) for email in all_emails]
                 successful_emails, duplicate_emails, failed_emails = await self.email_repository.bulk_save_emails(db_emails)
+                
+                
+                
+                self.logger.info("Extracting recipients from successful emails, note that duplicate emails will not have recipients extracted")
+                all_recipients = []
+                # Match graph emails with their corresponding db emails using source_id
+                if successful_emails:
+                    all_recipients = EmailUtils.extract_recipients_from_init_response_emails(all_emails, successful_emails)
+                    # Save recipients - any failure here will raise an exception
+                    if all_recipients:
+                        await self.email_recipient_repository.bulk_save_recipients(all_recipients)
+                else:
+                    self.logger.error("No recipients to save for successful emails")
+                    preview = successful_emails[:10]
+                    self.logger.error(f"First 10 successful emails for debugging: {[str(email) for email in preview]}") # pylint: disable=logging-fstring-interpolation
+                    
                 yield {
                     "status": "persistence_complete",
-                    "message": f"Persisted {len(successful_emails)}, Found {len(duplicate_emails)} duplicate emails, and had {len(failed_emails)} failures"
-                }
+                    "message": f"Emails: {len(successful_emails)} saved, {len(duplicate_emails)} duplicates, {len(failed_emails)} failed. "}
+                return  # Successfully completed
+            else:
+                # Only raise exception if no emails were found
+                yield {"status": "warning", "message": "No emails were found to process"}
+                raise RecursiveEmailException(
+                    detail="Failed to recursively retrieve emails, no emails were retrieved.",
+                    folder_id=folder_id,
+                    status_code=500
+                )
 
         except EmailPersistenceException as e:
             self.logger.warning("No emails were saved: %s", str(e))
-            yield {"status": "Error", "message": "No emails were saved"} 
-            raise e   
+            yield {"status": "error", "message": f"No emails were saved: {str(e)}"}
+            raise e
         except Exception as e:
             self.logger.error(
                 "Unexpected error during recursive email retrieval for folder %s: %s",
                 folder_id,
                 str(e)
             )
+            yield {"status": "error", "message": f"Failed to recursively retrieve emails: {str(e)}"}
             raise RecursiveEmailException(
                 detail=f"Failed to recursively retrieve emails: {str(e)}",
                 folder_id=folder_id,
