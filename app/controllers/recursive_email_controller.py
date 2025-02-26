@@ -33,6 +33,11 @@ def recursive_email_controller(
 
         Returns:
             EventSourceResponse containing status updates and list of all emails found
+
+            NOTE:
+            - The successful ids are the email ids in the database
+            - the duplicate ids are the graph message ids
+            - the failure ids are the graph source ids
         """
         if auth_response:
             return auth_response

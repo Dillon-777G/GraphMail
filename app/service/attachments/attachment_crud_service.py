@@ -22,5 +22,5 @@ class AttachmentCRUDService:
         Raises:
             AttachmentPersistenceException: If the attachment cannot be saved.          
         """
-        self.logger.info("Attempting to save attachment: %s", attachment.graph_attachment_id)
+        self.logger.info("Attempting to persist attachment: %s", attachment.graph_attachment_id)
         return await self.attachment_repository.save_attachment(attachment)

@@ -10,7 +10,7 @@ from app.error_handling.handlers.recursive_email_handler import RecursiveEmailHa
 from app.error_handling.handlers.global_handler import GlobalHandler
 from app.error_handling.handlers.email_persistence_handler import EmailPersistenceHandler
 from app.error_handling.handlers.validation_handler import ValidationHandler
-from app.error_handling.handlers.not_found_handler import NotFoundHandler
+from app.error_handling.handlers.api_not_found_handler import ApiNotFoundHandler
 from app.error_handling.handlers.no_result_handler import NoResultHandler
 from app.error_handling.handlers.value_error_handler import ValueErrorHandler
 from app.error_handling.handlers.client_authentication_handler import ClientAuthenticationHandler
@@ -31,7 +31,7 @@ class ExceptionHandlerManager:
             'global': GlobalHandler(),
             'email_persistence': EmailPersistenceHandler(),
             'validation': ValidationHandler(),
-            'not_found': NotFoundHandler(),
+            'api_not_found': ApiNotFoundHandler(),
             'no_result': NoResultHandler(),
             'value_error': ValueErrorHandler(),
             'client_auth': ClientAuthenticationHandler(),
@@ -69,8 +69,8 @@ class ExceptionHandlerManager:
         return await self.handlers['validation'].handle_validation_error(request, exc)
 
     # Api call not found
-    async def handle_not_found(self, request: Request, exc):
-        return await self.handlers['not_found'].handle_not_found(request, exc)
+    async def handle_api_not_found(self, request: Request, exc):
+        return await self.handlers['api_not_found'].handle_api_not_found(request, exc)
 
     # Database query not found
     async def handle_no_result_found(self, request: Request, exc):

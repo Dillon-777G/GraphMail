@@ -155,6 +155,7 @@ class EmailUtils:
         3. Extracts recipients (TO, CC, BCC) from each matched email
         4. Returns a combined list of all recipients as DBEmailRecipient objects
         """
+        logger.info("Extracting recipients from initial graph response email objects")
         db_email_map = {db_email.graph_source_id: db_email for db_email in successful_emails}
 
         all_recipients = []
@@ -165,3 +166,26 @@ class EmailUtils:
                 all_recipients.extend(recipients)
 
         return all_recipients
+
+    @staticmethod
+    def extract_email_ids_from_results(successful_emails, duplicate_emails, failed_emails):
+        """
+        Extract email IDs from database operation results. Using the graph message id for
+        duplicates and failures. to avoid a fetch call on our database.
+        
+        Args:
+            successful_emails: List of successfully saved email objects
+            duplicate_emails: List of emails that were duplicates
+            failed_emails: List of emails that failed to save
+            
+        Returns:
+            Tuple containing:
+            - List of successful email IDs
+            - List of duplicate  graph message ids
+            - List of failed graph source ids
+        """
+        logger.info("Extracting successful, duplicate and failed email ids from results")
+        successful_email_ids = [email.email_id for email in successful_emails]
+        duplicate_email_ids = [email.graph_message_id for email in duplicate_emails]
+        failed_email_ids = [email.graph_source_id for email in failed_emails]
+        return successful_email_ids, duplicate_email_ids, failed_email_ids

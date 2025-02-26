@@ -97,7 +97,6 @@ class SelectEmailService:
                 )
                 db_emails.append(db_email)
 
-            print(f"DB Emails: {db_emails}")
 
             successful_emails, duplicate_emails, failed_emails = await self.email_repository.bulk_save_emails(db_emails)
 
@@ -108,21 +107,22 @@ class SelectEmailService:
                 # Save recipients - any failure here will raise an exception
                 if all_recipients:
                     await self.email_recipient_repository.bulk_save_recipients(all_recipients)
-                else:
-                    self.logger.error("No recipients to save for successful emails")
-                    preview = successful_emails[:10]
-                    self.logger.error(f"First 10 successful emails for debugging: {[str(email) for email in preview]}") # pylint: disable=logging-fstring-interpolation
+            else:
+                self.logger.error("No recipients to save, there are no successful emails")
+                 
 
             
-            successful_email_ids = [email.email_id for email in successful_emails]
-            duplicate_email_ids = [email.email_id for email in duplicate_emails]
-            failed_email_ids = [email.email_id for email in failed_emails]
+            successful_email_ids, duplicate_email_ids, failed_email_ids = EmailUtils.extract_email_ids_from_results(
+                successful_emails, duplicate_emails, failed_emails
+            )
 
             return successful_email_ids, duplicate_email_ids, failed_email_ids
 
         except EmailPersistenceException as e:
             if e.is_duplicate_error():
                 self.logger.warning("Attempted to persist duplicate emails: %s", e.message_ids)
+            else:
+                self.logger.error("Error in select and persist operation: %s", str(e))
             raise
         except Exception as e:
             self.logger.error("Error in select and persist operation: %s", str(e))

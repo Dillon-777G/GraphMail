@@ -21,6 +21,7 @@ class AttachmentFileService:
         """
         try:
             # Ensure the directory exists
+            self.logger.info("Attempting to save attachment file to file system path: %s", attachment.url)
             os.makedirs(os.path.dirname(attachment.url), exist_ok=True)
             
             # Write the file
@@ -29,7 +30,7 @@ class AttachmentFileService:
 
             os.chmod(attachment.url, 0o664)
                 
-            self.logger.info("Successfully saved attachment file: %s", attachment.url)
+            self.logger.info("Successfully saved attachment file to file system path: %s", attachment.url)
             
         except Exception as e:
             self.logger.error("Failed to save attachment file: %s", str(e))

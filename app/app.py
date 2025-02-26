@@ -18,7 +18,7 @@ from app.controllers.email_persistence_controller import email_controller
 from app.service.graph.graph_authentication_service import Graph
 from app.service.graph.graph_id_translation_service import GraphIDTranslator
 from app.service.emails.paginated_email_service import PaginatedEmailService
-from app.service.emails.download_email_service import EmailDownloadService
+from app.service.emails.email_collection_service import EmailCollectionService
 from app.service.folder_service import FolderService
 from app.service.attachments.attachment_graph_service import AttachmentGraphService
 from app.service.emails.recursive_email_service import RecursiveEmailService
@@ -128,6 +128,7 @@ def init_app() -> FastAPI:
     # Register routes
     register_routes(app_init, graph, services)
 
+
     logger.info(r"""
                 
                 
@@ -144,9 +145,14 @@ def init_app() -> FastAPI:
     ██║╚██╔╝██║██╔══██║██║██║                
     ██║ ╚═╝ ██║██║  ██║██║███████╗           
     ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝           
-                                            
+    Made with ❤️ by Dillon Gaughan                                        
                 """)
     return app_init
+
+
+
+
+
 
 
 def create_services(graph, graph_translator, repositories):
@@ -156,7 +162,7 @@ def create_services(graph, graph_translator, repositories):
     
     return {
         'paginated_email': PaginatedEmailService(graph),
-        'download_email': EmailDownloadService(graph, graph_translator),
+        'email_collection': EmailCollectionService(graph, graph_translator),
         'folder': FolderService(graph),
         'attachment_graph': AttachmentGraphService(
             graph, email_crud, attachment_crud, AttachmentFileService()
@@ -164,13 +170,14 @@ def create_services(graph, graph_translator, repositories):
         'email_cache': EmailCacheService(),
         'recursive_email': RecursiveEmailService(
             folder_service=FolderService(graph),
-            download_email_service=EmailDownloadService(graph, graph_translator),
+            email_collection_service=EmailCollectionService(graph, graph_translator),
             email_cache_service=EmailCacheService(),
             email_repository=repositories['email'],
             email_recipient_repository=repositories['email_recipient']
         ),
         'select_email': SelectEmailService(
-            graph, graph_translator,
+            graph, 
+            graph_translator, 
             repositories['email'],
             repositories['email_recipient'],
             PaginatedEmailService(graph)

@@ -3,7 +3,7 @@ from typing import List, AsyncGenerator, Union, Dict, Any
 
 from app.models.email import Email
 from app.service.folder_service import FolderService
-from app.service.emails.download_email_service import EmailDownloadService
+from app.service.emails.email_collection_service import EmailCollectionService
 from app.error_handling.exceptions.folder_exception import FolderException
 from app.error_handling.exceptions.email_exception import EmailException
 from app.error_handling.exceptions.recursive_email_exception import RecursiveEmailException
@@ -17,13 +17,13 @@ class RecursiveEmailService:
     def __init__(
         self, 
         folder_service: FolderService, 
-        download_email_service: EmailDownloadService,
+        email_collection_service: EmailCollectionService,
         email_cache_service: EmailCacheService,
         email_repository: EmailRepository,
         email_recipient_repository: EmailRecipientRepository
     ):
         self.folder_service = folder_service
-        self.download_email_service = download_email_service
+        self.email_collection_service = email_collection_service
         self.logger = logging.getLogger(__name__)
         self.email_cache_service = email_cache_service
         self.email_repository = email_repository
@@ -38,7 +38,8 @@ class RecursiveEmailService:
     ) -> AsyncGenerator[Dict[str, Any], None]:
         """
         Recursively retrieve and persist all emails from a folder and its subfolders.
-        Yields status updates about the operation progress.
+        Yields status updates about the operation progress and finally returns
+        the IDs of successful, duplicate, and failed emails.
         """
         try:
             all_emails = []
@@ -55,8 +56,6 @@ class RecursiveEmailService:
                 db_emails = [EmailUtils.email_to_db_email_recursive(email, request) for email in all_emails]
                 successful_emails, duplicate_emails, failed_emails = await self.email_repository.bulk_save_emails(db_emails)
                 
-                
-                
                 self.logger.info("Extracting recipients from successful emails, note that duplicate emails will not have recipients extracted")
                 all_recipients = []
                 # Match graph emails with their corresponding db emails using source_id
@@ -66,13 +65,25 @@ class RecursiveEmailService:
                     if all_recipients:
                         await self.email_recipient_repository.bulk_save_recipients(all_recipients)
                 else:
-                    self.logger.error("No recipients to save for successful emails")
-                    preview = successful_emails[:10]
-                    self.logger.error(f"First 10 successful emails for debugging: {[str(email) for email in preview]}") # pylint: disable=logging-fstring-interpolation
-                    
+                    self.logger.error("No recipients to save, there are no successful emails")
+
+                # Extract IDs for the response
+                successful_email_ids, duplicate_email_ids, failed_email_ids = EmailUtils.extract_email_ids_from_results(
+                    successful_emails, duplicate_emails, failed_emails
+                )
+                
+                total_emails = len(successful_email_ids) + len(duplicate_email_ids) + len(failed_email_ids)
+
                 yield {
                     "status": "persistence_complete",
-                    "message": f"Emails: {len(successful_emails)} saved, {len(duplicate_emails)} duplicates, {len(failed_emails)} failed. "}
+                    "message": f"Emails: {len(successful_emails)} saved, {len(duplicate_emails)} duplicates, {len(failed_emails)} failed.",
+                    "data": {
+                        "total_emails": total_emails,
+                        "successful": successful_email_ids,
+                        "duplicates": duplicate_email_ids,
+                        "failures": failed_email_ids
+                    }
+                }
                 return  # Successfully completed
             else:
                 # Only raise exception if no emails were found
@@ -125,7 +136,7 @@ class RecursiveEmailService:
 
             # Always check for new emails
             new_emails = []
-            async for item in self.download_email_service.get_all_emails_by_folder_id(folder_id):
+            async for item in self.email_collection_service.get_all_emails_by_folder_id(folder_id):
                 if isinstance(item, list):
                     # Filter out emails that are already in cache
                     if cached_emails:

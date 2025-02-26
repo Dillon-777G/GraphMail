@@ -100,8 +100,13 @@ class EmailRepository:
             duplicate_emails = []
             failed_emails = []
             
+            self.logger.info("Starting repository operation to persist %d emails", len(emails))
             for email in emails:
                 try:
+                    # we want to log the email that we are attempting to persist, use both ids here for debugging
+                    self.logger.info("Attempting to persist email with message id: %s and source id: %s",
+                     email.graph_message_id, email.graph_source_id)
+
                     session.add(email)
                     await session.flush()
                     await session.commit()
@@ -110,14 +115,19 @@ class EmailRepository:
                 except IntegrityError as e:
                     await session.rollback()
                     if isinstance(e.orig, pymysql.err.IntegrityError) and e.orig.args[0] == RepositoryConstants.MYSQL_DUPLICATE_ENTRY_ERROR:
-                        self.logger.info("Skipping duplicate email: %s", email)
+                        # this will already have an immutable id, we should use these here bc it is all we need to match on
+                        self.logger.info("Skipping duplicate email with message id: %s", email.graph_message_id) 
                         duplicate_emails.append(email)
                     else:
-                        self.logger.error("Failed to persist email: %s", email)
+                        # we cannot assume that we have immutable ids here, so we should use both
+                        self.logger.error("Failed to persist email with message id: %s and source id: %s",
+                         email.graph_message_id, email.graph_source_id)
                         failed_emails.append(email)
                 except Exception:
                     await session.rollback()
-                    self.logger.error("Failed with an unknown error, aborting operation. Last email processed: %s", email)
+                    # same here no assumptions can be made about the id
+                    self.logger.error("Failed with an unknown error, aborting operation. Last email processed message id: %s and source id: %s",
+                     email.graph_message_id, email.graph_source_id)
                     raise
             
             return successfully_persisted, duplicate_emails, failed_emails
@@ -136,7 +146,7 @@ class EmailRepository:
                 query = select(DBEmail).where(DBEmail.graph_message_id == graph_message_id)
                 result = await session.execute(query)
                 email = result.scalar_one()
-                return email.id
+                return email.email_id
             except NoResultFound:
                 raise 
             except Exception as e:

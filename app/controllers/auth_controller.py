@@ -15,6 +15,7 @@ def auth_controller(graph: Graph, session_store: SessionStore) -> APIRouter:
         """
         Provides the authorization URL for the user to initiate authentication.
         """
+        logger.info("Received direct auth request, certainly hope you are a developer.")
         auth_url = graph.get_authorization_url()
         logger.info("Initiating auth with URL: %s", auth_url)
         return {
@@ -60,8 +61,8 @@ def auth_controller(graph: Graph, session_store: SessionStore) -> APIRouter:
         # Clean up the session
         session_store.remove_session(state)
         logger.info("Session cleaned up, redirecting to bridge URL with order ID: %s", order_id)
-        # Redirect to bridge URL with order ID, work in progress
-        redirect_url = f"http://localhost:3000/{order_id}"
+        # Redirect to bridge URL with order ID
+        redirect_url = f"http://localhost:3000/bridge/{order_id}"
         return RedirectResponse(url=redirect_url)
 
     return router

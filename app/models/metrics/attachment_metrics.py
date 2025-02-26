@@ -5,26 +5,22 @@ from .base_metrics import BaseMetrics
 class AttachmentMetrics(BaseMetrics):
     """Metrics for attachment operations, focusing on download performance."""
     
-    attachments_processed: int = 0
-    total_bytes_downloaded: int = 0
+    attachment_id: Optional[str] = None
     folder_id: str = ""
     message_id: str = ""
     download_time: Optional[float] = None  # Single duration value
     download_size: Optional[int] = None    # Single size value
+    attachments_processed: Optional[int] = None
     retry_count: int = 0                   # Single retry counter
     last_error: Optional[str] = None       # Track last error message
-    failed_attachment_id: Optional[str] = None  # Track failed attachment ID
     failure_count: int = 0                 # Track number of failures
 
     def record_download(self, size: int):
         """Record metrics for a successful download."""
         self.download_size = size
-        self.total_bytes_downloaded += size
-        self.attachments_processed += 1
 
-    def record_download_failure(self, attachment_id: str, error_message: str):
+    def record_download_failure(self, error_message: str):
         """Record metrics for a failed download attempt."""
-        self.failed_attachment_id = attachment_id
         self.last_error = error_message
         self.failure_count += 1
 
@@ -32,17 +28,13 @@ class AttachmentMetrics(BaseMetrics):
         """Record a retry attempt."""
         self.retry_count += 1
 
-    def record_fetch(self, attachment_count: int):
-        """Record metrics for fetching attachments from a message."""
-        self.attachments_processed = attachment_count
-
     def log_metrics_fetch(self, logger: logging.Logger):
         """Log fetch metrics for attachments in a clean, delimited block."""
         separator = "-" * 40
         logger.info("\n%s", separator)
         logger.info("--- Fetch Attachments Metrics ---")
-        logger.info("Attachments fetched: %d", self.attachments_processed)
         logger.info("Total time: %.2fs", self.processing_time)
+        logger.info("Attachments processed: %d", self.attachments_processed)
         logger.info("Current phase: %s", self.current_phase)
         logger.info("%s\n", separator)
 
@@ -56,14 +48,12 @@ class AttachmentMetrics(BaseMetrics):
         logger.info("--- Attachment Download Metrics ---")
         logger.info("Folder ID: %s", self.folder_id)
         logger.info("Message ID: %s", self.message_id)
-        logger.info("Attachments processed: %d", self.attachments_processed)
+        logger.info("Attachment ID: %s", self.attachment_id)
         logger.info("Total size: %.2f MB", total_mb)
         logger.info("Average speed: %.2f MB/s", avg_speed)
         logger.info("Retries: %d", total_retries)
         if self.failure_count > 0:
             logger.info("Failures: %d", self.failure_count)
-            if self.failed_attachment_id:
-                logger.info("Last failed attachment: %s", self.failed_attachment_id)
             if self.last_error:
                 logger.info("Last error: %s", self.last_error)
         logger.info("Total time: %.2fs", self.processing_time)

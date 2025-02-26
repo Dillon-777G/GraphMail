@@ -3,6 +3,7 @@ import logging
 from typing import List
 
 from msgraph.generated.models.file_attachment import FileAttachment
+from msgraph.generated.models.message import Message
 from msgraph.generated.users.item.messages.messages_request_builder import MessagesRequestBuilder
 from kiota_abstractions.base_request_configuration import RequestConfiguration
 from kiota_abstractions.api_error import APIError
@@ -10,11 +11,14 @@ from kiota_abstractions.api_error import APIError
 
 from app.error_handling.exceptions.email_attachment_exception import EmailAttachmentException
 from app.error_handling.exceptions.graph_response_exception import GraphResponseException
+from app.error_handling.exceptions.email_exception import EmailException
+
 from app.models.email_attachment import EmailAttachment
 from app.service.retry_service import RetryService
 from app.models.retries.retry_context import RetryContext
 from app.models.retries.retry_enums import RetryProfile
 from app.models.metrics.attachment_metrics import AttachmentMetrics
+
 from app.service.graph.graph_authentication_service import Graph
 from app.service.emails.email_crud_service import EmailCRUDService
 from app.service.attachments.attachment_crud_service import AttachmentCRUDService
@@ -71,24 +75,27 @@ class AttachmentGraphService:
             EmailAttachmentException: If the attachment is not found or is an
             unsupported type.
         """
-        metrics = self.__start_metrics(folder_id, message_id)
+        metrics = self.__start_metrics(folder_id, message_id, attachment_id)
         
         try:
+            self.logger.info("Starting download service for attachment: %s", attachment_id)
             # Start processing time is tracked by metrics.start_processing()
+            metrics.current_phase = "fetching attachment"
             raw_attachment = await self.__get_attachment(folder_id, message_id, attachment_id)
             email_id = await self.email_crud_service.get_email_id_by_graph_message_id(message_id)
+            metrics.current_phase = "processing attachment"
             processed_data = await self.__process_attachment(raw_attachment, email_id)
+            metrics.current_phase = "complete"
             
             # Record metrics after successful processing
-            metrics.record_download(
-                len(processed_data.get("content_bytes", b""))
-            )
+            metrics.record_download(raw_attachment.size)
             return processed_data
             
         except APIError as e:
             # Record API-specific failures with detailed error info
             error_message = f"API Error: {str(e.message if e.message else str(e))}"
-            metrics.record_download_failure(attachment_id, error_message)
+            metrics.record_download_failure(error_message)
+            self.logger.error("API Error on downloading attachment: %s", error_message)
             raise EmailAttachmentException(
                 detail=f"Attachment {attachment_id} not found or cannot be accessed.",
                 attachment_id=attachment_id,
@@ -96,11 +103,10 @@ class AttachmentGraphService:
             ) from e
         except Exception as e:
             # Record all other failures
-            metrics.record_download_failure(attachment_id, str(e))
+            metrics.record_download_failure(str(e))
             raise
         finally:
             metrics.end_processing()  # End timing for the entire operation
-            metrics.current_phase = "complete"
             metrics.log_metrics_download(self.logger)
 
 
@@ -186,11 +192,7 @@ class AttachmentGraphService:
         if content_bytes:
             try:
                 decoded_content = base64.b64decode(content_bytes)
-
-                # Add logging to debug
                 self.logger.debug("Content type: %s", raw_attachment.content_type)
-
-                # Save the file to the filesystem
                 await self.attachment_file_service.save_attachment_file(db_attachment, decoded_content)
 
             except Exception as e:
@@ -199,6 +201,7 @@ class AttachmentGraphService:
                     attachment_id=attachment.id,
                     status_code=500
                 ) from e
+        self.logger.info("Finished processing attachment, attachment data: %s", data)
         return data
 
         
@@ -229,9 +232,11 @@ class AttachmentGraphService:
         https://learn.microsoft.com/en-us/answers/questions/360481/filtering-attachments-in-graph-api-does-not-work
         https://stackoverflow.com/questions/72391953/microsoft-graph-api-for-email-attachment-cant-filter-by-size
         """
-        metrics = self.__start_metrics(folder_id, message_id)
-        
+        self.logger.info("Starting fetch message attachments service for message: %s", message_id)
+        metrics = self.__start_metrics(folder_id, message_id, None)
+
         async def fetch():
+            metrics.current_phase = "fetching attachments"
             message = await self.graph.client.me.mail_folders.by_mail_folder_id(
                     folder_id
                 ).messages.by_message_id(message_id).get(
@@ -242,10 +247,9 @@ class AttachmentGraphService:
                     )
                 )
 
-            if not message or not message.attachments:
-                self.logger.info("No attachments found for message ID %s", message_id)
-                return []
-
+            self.__validate_message_and_attachments(message, folder_id, message_id)
+            metrics.attachments_processed = len(message.attachments)
+                
             # Filter for file attachments only and convert them
             attachments = [
                 EmailAttachment.graph_email_attachment(att)
@@ -253,7 +257,6 @@ class AttachmentGraphService:
                 if att.odata_type == "#microsoft.graph.fileAttachment"
             ]
             
-            metrics.record_fetch(len(attachments))
             return attachments
 
         retry_context = RetryContext(
@@ -264,7 +267,9 @@ class AttachmentGraphService:
         )
 
         try:
-            return await self.retry_service.retry_operation(retry_context)
+            result = await self.retry_service.retry_operation(retry_context)
+            metrics.current_phase = "complete"
+            return result
         except GraphResponseException as e:
             self.logger.error("Failed to retrieve attachments for message %s: %s", message_id, str(e))
             raise
@@ -275,15 +280,40 @@ class AttachmentGraphService:
             ) from e
         finally:
             metrics.end_processing()  # End timing for the entire operation
-            metrics.current_phase = "complete"
             metrics.log_metrics_fetch(self.logger)
 
 
 
-    def __start_metrics(self, folder_id: str, message_id: str):
+
+    
+    def __validate_message_and_attachments(self, message: Message, folder_id: str, message_id: str):
+        if not message:
+            self.logger.error("No message found for message ID %s", message_id)
+            raise EmailException(
+                detail=f"No message found for message ID {message_id}",
+                folder_id=folder_id,
+                message_id=message_id,
+                status_code=404
+            )
+        
+        if not message.attachments:
+            self.logger.info("No attachments found for message ID %s", message_id)
+            raise EmailAttachmentException(
+                detail=f"No attachments found for message ID {message_id}",
+                attachment_id=message_id,
+                status_code=404
+            )
+
+
+
+
+
+    def __start_metrics(self, folder_id: str, message_id: str, attachment_id: str):
         metrics = AttachmentMetrics()
         metrics.start_processing()
         metrics.folder_id = folder_id
         metrics.message_id = message_id
+        metrics.attachment_id = attachment_id
+        metrics.current_phase = "initializing"
         return metrics
 # End of file

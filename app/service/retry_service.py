@@ -58,7 +58,7 @@ class RetryService:
             Exception: If operation fails after all retries
         """
         start_time = time.time()
-
+        self.logger.info("Starting retry operation for %s", context.operation.__name__)
         abort_exceptions = [APIError, IntegrityError]
         if context.abort_on_exceptions:
             abort_exceptions.extend(context.abort_on_exceptions)
@@ -67,11 +67,13 @@ class RetryService:
         for attempt in range(self.max_retries):
             try:
                 if self.max_timeout and time.time() - start_time > self.max_timeout:
+                    self.logger.info("Operation exceeded maximum timeout of %s seconds", self.max_timeout)
                     raise TimeoutError(
                         f"Operation exceeded maximum timeout of {self.max_timeout} seconds"
                     )
-                    
+                self.logger.info("Attempt %d of %d", attempt + 1, self.max_retries)
                 result = await context.operation()
+                self.logger.info("Operation %s completed successfully", context.operation.__name__)
                 return result
 
             except Exception as e: # pylint: disable=W0718

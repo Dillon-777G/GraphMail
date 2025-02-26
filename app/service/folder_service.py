@@ -48,7 +48,7 @@ class FolderService:
 
     async def get_root_folders(self) -> List[Folder]:
         metrics = self.__start_metrics()
-        
+        self.logger.info("Starting service to get root folders")
         try:
             folders = await self.retry_service.retry_operation(
                 RetryContext(
@@ -57,7 +57,7 @@ class FolderService:
                     custom_exception=FolderException
                 )
             )
-            
+            self.logger.info("Retrieved %d root folders", len(folders))
             # Just pass the child_folder_count from each folder
             metrics.record_retrieval(len(folders))
             return folders
@@ -86,7 +86,7 @@ class FolderService:
         Get all child folders for a specific folder ID.
         """
         metrics = self.__start_metrics()
-        
+        self.logger.info("Starting service to get child folders for folder ID: %s", folder_id)
         try:
             folders = await self.retry_service.retry_operation(
                 RetryContext(
@@ -99,7 +99,6 @@ class FolderService:
                     )
                 )
             )
-            
             # Only process metrics if we found child folders
             if folders:
                 for folder in folders:
@@ -107,7 +106,8 @@ class FolderService:
                 metrics.end_processing()
                 metrics.current_phase = "complete"
                 metrics.log_metrics_retrieval(self.logger, "Get Child Folders")
-                
+
+            self.logger.info("Retrieved %d child folders for folder ID: %s", len(folders), folder_id)
             return folders
 
         except Exception as e:
@@ -130,6 +130,7 @@ class FolderService:
         Get details of a specific folder by its ID.
         """
         metrics = self.__start_metrics()  # This returns an instance of FolderMetrics.
+        self.logger.info("Starting service to get folder for folder ID: %s", folder_id)
         
         try:
             folder = await self.retry_service.retry_operation(

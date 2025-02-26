@@ -33,6 +33,7 @@ class EmailRecipientRepository:
         """
         async with get_db() as session:
 
+            self.logger.info("Starting to persist %d recipients", len(recipients))
             for recipient in recipients:
                 try:
                     session.add(recipient)
@@ -41,6 +42,7 @@ class EmailRecipientRepository:
                     
                 except Exception as e:
                     await session.rollback()
+                    self.logger.error("Failed to save recipient: %s", str(e))
                     raise EmailPersistenceException(f"Failed to save recipient: {str(e)}") from e
             
-                    
+            self.logger.info("Successfully persisted %d recipients", len(recipients))

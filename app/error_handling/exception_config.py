@@ -18,7 +18,7 @@ def get_exception_handlers(handler: ExceptionHandlerManager) -> dict:
     Centralizes exception handling configuration.
     """
     return {
-        404: handler.handle_not_found,
+        404: handler.handle_api_not_found,
         RequestValidationError: handler.handle_validation_error,
         AuthenticationFailedException: handler.handle_authentication_error,
         EmailAttachmentException: handler.handle_attachment_error,

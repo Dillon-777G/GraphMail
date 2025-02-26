@@ -30,6 +30,15 @@ def email_controller(
             folder_id (str): The ID of the folder containing the emails (from path)
             selection (EmailSelectionDTO): Selection parameters including message IDs and reference info
             auth_response: Authentication response from dependency
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the status of the operation and the data
+            returned from the select and persist operation.
+
+            NOTE: 
+            - The successful ids are the email ids in the database
+            - the duplicate ids are the graph message ids
+            - the failure ids are the graph source ids
         """
         if auth_response:
             return auth_response

@@ -27,6 +27,7 @@ class GraphIDTranslator:
         Returns:
             List[Dict[str, Any]]: Translated IDs with source and target mapping.
         """
+        self.logger.info("Starting ID translation service for %d input IDs", len(input_ids))
         try:
             if not input_ids:
                 raise IdTranslationException(
@@ -42,12 +43,14 @@ class GraphIDTranslator:
 
             result = await self.graph.client.me.translate_exchange_ids.post(request_body)
             if not result or not result.value:
+                self.logger.error("No results returned from translation service")
                 raise IdTranslationException(
                     detail="No results returned from translation service",
                     source_ids=input_ids,
                     status_code=500
                 )
 
+            self.logger.info("Translation service completed successfully for %d input IDs", len(input_ids))
             return [
                 {"source_id": item.source_id, "target_id": item.target_id}
                 for item in result.value

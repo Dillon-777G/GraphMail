@@ -40,10 +40,6 @@ class BatchMetrics(BaseMetrics):
     total_retries: int = Field(default=0)
     total_errors: int = Field(default=0)
     
-    # Optional translation error/retry counters
-    translation_retries: int = Field(default=0)
-    translation_errors: int = Field(default=0)
-    
     # Progress-tracking fields for frontend
     current_phase: str = Field(default="initializing")
     phase_progress: float = Field(default=0.0)
@@ -72,28 +68,6 @@ class BatchMetrics(BaseMetrics):
     def record_page_error(self):
         self.total_errors = self.total_errors + 1
 
-    # ---------------------- Translation Error Counters ---------------------- #
-    def record_translation_retry(self):
-        self.translation_retries = self.translation_retries + 1
-
-    def record_translation_error(self):
-        self.translation_errors = self.translation_errors + 1
-
-    # ---------------------- Statistics ---------------------- #
-    def get_statistics(self) -> Dict[str, float]:
-        """
-        Calculate page-based statistics.
-        Uses simple mean and median calculations.
-        """
-        if not self.current_page_time == 0:
-            return {
-                "mean_duration": self.current_page_time,
-                "median_duration": self.current_page_time,
-                "mean_items": self.current_page_items,
-                "total_retries": self.total_retries,
-                "pages_with_errors": self.total_errors
-            }
-        return {}
 
     # ---------------------- Final Logging ---------------------- #
     def log_final_metrics(self, logger: logging.Logger):
@@ -101,24 +75,14 @@ class BatchMetrics(BaseMetrics):
         Log a single, final summary of all metrics to the console.
         This output is kept concise.
         """
-        stats = self.get_statistics()
         total_time = time.time() - self.start_time
         separator = "-" * 40
 
         logger.info("\n\n%s", separator)
-        logger.info("--- Final Operation Metrics ---")
+        logger.info("--- Final API Service Operation Metrics ---")
         logger.info("Folder ID: %s", self.folder_id)
         logger.info("Emails processed: %d (processing took %.2fs)",
                     self.emails_processed, self.processing_time)
-        if stats:
-            logger.info("Pages fetched: %d (avg %.2fs/page, median %.2fs)",
-                        self.pages_fetched,
-                        stats.get("mean_duration", 0),
-                        stats.get("median_duration", 0))
-            logger.info("Items per page: %.1f", stats.get("mean_items", 0))
-            logger.info("Retries: %d, Errors: %d",
-                        stats.get("total_retries", 0),
-                        stats.get("pages_with_errors", 0))
         logger.info("IDs translated: %d (translation took %.2fs)",
                     self.ids_translated, self.translation_time)
         logger.info("Total time: %.2fs", total_time)
