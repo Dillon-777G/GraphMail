@@ -62,7 +62,7 @@ def auth_controller(graph: Graph, session_store: SessionStore) -> APIRouter:
         session_store.remove_session(state)
         logger.info("Session cleaned up, redirecting to bridge URL with order ID: %s", order_id)
         # Redirect to bridge URL with order ID
-        redirect_url = f"http://localhost:3000/bridge/{order_id}"
+        redirect_url = f"http://localhost:3000/{order_id}"
         return RedirectResponse(url=redirect_url)
 
     return router
