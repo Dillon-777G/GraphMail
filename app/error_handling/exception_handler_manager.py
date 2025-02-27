@@ -15,6 +15,7 @@ from app.error_handling.handlers.no_result_handler import NoResultHandler
 from app.error_handling.handlers.value_error_handler import ValueErrorHandler
 from app.error_handling.handlers.client_authentication_handler import ClientAuthenticationHandler
 from app.error_handling.handlers.db_email_recipient_handler import DBEmailRecipientHandler
+from app.error_handling.handlers.attachment_persistence_handler import AttachmentPersistenceHandler
 
 class ExceptionHandlerManager:
     """Coordinates all exception handlers by initializing and delegating to them."""
@@ -30,12 +31,13 @@ class ExceptionHandlerManager:
             'recursive_email': RecursiveEmailHandler(),
             'global': GlobalHandler(),
             'email_persistence': EmailPersistenceHandler(),
+            'attachment_persistence': AttachmentPersistenceHandler(),
             'validation': ValidationHandler(),
             'api_not_found': ApiNotFoundHandler(),
             'no_result': NoResultHandler(),
             'value_error': ValueErrorHandler(),
             'client_auth': ClientAuthenticationHandler(),
-            'db_email_recipient': DBEmailRecipientHandler(),
+            'db_email_recipient': DBEmailRecipientHandler()
         }
 
     async def handle_authentication_error(self, request: Request, exc):
@@ -64,6 +66,9 @@ class ExceptionHandlerManager:
 
     async def handle_email_persistence_error(self, request: Request, exc):
         return await self.handlers['email_persistence'].handle_email_persistence_error(request, exc)
+
+    async def handle_attachment_persistence_error(self, request: Request, exc):
+        return await self.handlers['attachment_persistence'].handle_attachment_persistence_error(request, exc)
 
     async def handle_validation_error(self, request: Request, exc):
         return await self.handlers['validation'].handle_validation_error(request, exc)

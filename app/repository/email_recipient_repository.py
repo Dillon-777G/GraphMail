@@ -22,7 +22,6 @@ class EmailRecipientRepository:
         retry_context = RetryContext(
             operation=lambda: self._execute_persist(recipients),
             error_msg="Failed to persist recipients in bulk operation",
-            custom_exception=EmailPersistenceException
         )
         return await self.retry_service.retry_operation(retry_context)
 

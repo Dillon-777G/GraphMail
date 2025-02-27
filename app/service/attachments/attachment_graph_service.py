@@ -140,12 +140,7 @@ class AttachmentGraphService:
 
         retry_context = RetryContext(
             operation=fetch,
-            error_msg=f"Failed to retrieve attachment {attachment_id}",
-            custom_exception=lambda detail, status_code: EmailAttachmentException(
-                detail=detail,
-                attachment_id=attachment_id,
-                status_code=status_code
-            ),
+            error_msg=f"Failed to retrieve attachment {attachment_id}"
         )
 
         try:
@@ -261,9 +256,7 @@ class AttachmentGraphService:
 
         retry_context = RetryContext(
             operation=fetch,
-            error_msg=f"Failed to retrieve attachments for message {message_id}",
-            custom_exception=EmailAttachmentException
-
+            error_msg=f"Failed to retrieve attachments for message {message_id}"
         )
 
         try:

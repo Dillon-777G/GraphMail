@@ -27,21 +27,6 @@ class AuthDependency:
                 self.logger.info("User not authenticated or token expired, redirecting to auth URL.")
                 return auth_status
 
-            auth_code = request.query_params.get("code")
-            state = request.query_params.get("state")
-            self.logger.debug("State in auth dep: %s", state)
-
-            if auth_code and state:
-                self.logger.debug("Auth callback detected - Code and State present.")
-                auth_status = await self.graph.ensure_authenticated(auth_code, state)
-
-                if auth_status["authenticated"]:
-                    self.logger.info("User successfully authenticated.")
-                    return None  # Continue request
-
-                self.logger.warning("Authentication failed despite valid code and state.")
-                return auth_status
-
             return None  # Continue request - we're authenticated
 
         except Exception as e:

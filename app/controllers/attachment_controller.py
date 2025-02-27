@@ -25,7 +25,7 @@ def attachment_controller(graph: Graph, attachment_graph_service: AttachmentGrap
     auth = AuthDependency(graph)
 
 
-    @router.get("/{folder_id}/{message_id}")
+    @router.get("/{folder_id}/{message_id}") # modify for message searh only 
     async def get_attachments(folder_id: str, message_id: str,
      auth_response: Union[Dict[str,str], None] = Depends(auth)):
         """
@@ -59,7 +59,7 @@ def attachment_controller(graph: Graph, attachment_graph_service: AttachmentGrap
             }
 
 
-    @router.post("/{folder_id}/{message_id}/{attachment_id}/download")
+    @router.post("/{folder_id}/{message_id}/{attachment_id}/download") # modify for message search only 
     async def download_attachment(folder_id: str, message_id: str, attachment_id: str,
      auth_response: Union[Dict[str,str], None] = Depends(auth)):
         """
@@ -85,7 +85,7 @@ def attachment_controller(graph: Graph, attachment_graph_service: AttachmentGrap
         
         return {
             "status": "success",
-            "data": db_attachment
+            "data": db_attachment # modify to only return the primary key of the attachment
         }
 
 

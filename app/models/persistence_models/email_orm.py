@@ -5,8 +5,10 @@ from app.persistence.base_connection import Base
 class DBEmail(Base):
     __tablename__ = "tbl_email_v2"
 
-    # Expected from front-end
+    # Primary key for the database
     email_id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # Expected from front-end
     ref_id = Column(Integer, nullable=False)
     ref_type = Column(String(20), nullable=False, index=True)
 

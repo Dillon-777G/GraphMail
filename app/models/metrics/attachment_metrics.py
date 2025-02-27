@@ -41,8 +41,14 @@ class AttachmentMetrics(BaseMetrics):
     def log_metrics_download(self, logger: logging.Logger):
         """Log download metrics for attachments in a clean, delimited block."""
         separator = "-" * 40
-        total_mb = self.total_bytes_downloaded / (1024 * 1024)
-        avg_speed = total_mb / self.processing_time if self.processing_time > 0 else 0
+        
+        # Add null check for download_size
+        total_mb = 0
+        avg_speed = 0
+        if self.download_size is not None:
+            total_mb = self.download_size / (1024 * 1024)
+            avg_speed = total_mb / self.processing_time if self.processing_time > 0 else 0
+        
         total_retries = self.retry_count
         logger.info("\n%s", separator)
         logger.info("--- Attachment Download Metrics ---")

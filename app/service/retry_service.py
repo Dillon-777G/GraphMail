@@ -87,11 +87,6 @@ class RetryService:
                     )
                     if context.error_recorder:
                         context.error_recorder()
-                    if context.custom_exception:
-                        raise context.custom_exception(
-                            detail=f"Operation aborted: {str(e)}",
-                            status_code=409 if isinstance(e, IntegrityError) else 500
-                        ) from e
                     raise e
 
                 if context.metrics_recorder:
@@ -101,11 +96,7 @@ class RetryService:
                     if context.error_recorder:
                         context.error_recorder()
                     self.logger.error("%s: %s", context.error_msg, str(e))
-                    if context.custom_exception:
-                        raise context.custom_exception(
-                            detail=f"Operation failed after {self.max_retries} attempts: {str(e)}",
-                            status_code=500
-                        ) from e
+                    self.logger.error("Operation failed after %d attempts: %s", self.max_retries, str(e))
                     raise e
                     
                 delay = self._calculate_delay(attempt)

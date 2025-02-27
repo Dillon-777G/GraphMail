@@ -1,29 +1,37 @@
 import logging
+from typing import Union, Dict, Optional
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse
 from app.service.graph.graph_authentication_service import Graph
 from app.service.session_store.session_store_service import SessionStore
+from app.controllers.fAPI_dependencies.auth_dependency import AuthDependency
 from app.error_handling.exceptions.authentication_exception import AuthenticationFailedException
 
 def auth_controller(graph: Graph, session_store: SessionStore) -> APIRouter:
     router = APIRouter()
+    auth = AuthDependency(graph)
     logger = logging.getLogger(__name__)
 
     @router.get("/auth")
-    def initiate_auth():
+    async def initiate_auth(
+        order_id: Optional[int] = None,
+        auth_response: Union[Dict[str,str], None] = Depends(auth)):
         """
         Provides the authorization URL for the user to initiate authentication.
         """
-        logger.info("Received direct auth request, certainly hope you are a developer.")
-        auth_url = graph.get_authorization_url()
-        logger.info("Initiating auth with URL: %s", auth_url)
-        return {
-            "status": "success",
-            "data": {
-                "auth_url": auth_url
-            }
-        }
+        logger.info("Received direct auth request.")
+        if auth_response:
+            if order_id:
+                logger.info("Received order ID, storing it in session.")
+                state = auth_response["auth_url"].split("state=")[1].split("&")[0]
+                session_store.store_order_id(state, order_id)
+            logger.info("Received auth response, returning it.")
+            return auth_response
+
+        logger.info("No auth response, User is authenticated.")
+        return {"authenticated": True, "auth_url": None}
+
 
     @router.get("/callback")
     async def auth_callback(request: Request):
@@ -62,7 +70,7 @@ def auth_controller(graph: Graph, session_store: SessionStore) -> APIRouter:
         session_store.remove_session(state)
         logger.info("Session cleaned up, redirecting to bridge URL with order ID: %s", order_id)
         # Redirect to bridge URL with order ID
-        redirect_url = f"http://localhost:3000/{order_id}"
+        redirect_url = f"http://localhost:3000/bridge/{order_id}"
         return RedirectResponse(url=redirect_url)
 
     return router

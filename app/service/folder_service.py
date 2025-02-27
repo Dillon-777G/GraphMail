@@ -53,8 +53,7 @@ class FolderService:
             folders = await self.retry_service.retry_operation(
                 RetryContext(
                     operation=self.__fetch_root_folders,
-                    error_msg="Failed to retrieve root folders",
-                    custom_exception=FolderException
+                    error_msg="Failed to retrieve root folders"
                 )
             )
             self.logger.info("Retrieved %d root folders", len(folders))
@@ -91,12 +90,7 @@ class FolderService:
             folders = await self.retry_service.retry_operation(
                 RetryContext(
                     operation=lambda: self.__fetch_child_folders(folder_id),
-                    error_msg=f"Failed to retrieve child folders for folder {folder_id}",
-                    custom_exception=lambda detail, status_code: FolderException(
-                        detail=detail,
-                        folder_id=folder_id,
-                        status_code=status_code
-                    )
+                    error_msg=f"Failed to retrieve child folders for folder {folder_id}"
                 )
             )
             # Only process metrics if we found child folders
@@ -136,12 +130,7 @@ class FolderService:
             folder = await self.retry_service.retry_operation(
                 RetryContext(
                     operation=lambda: self.graph.client.me.mail_folders.by_mail_folder_id(folder_id).get(),
-                    error_msg=f"Failed to retrieve folder {folder_id}",
-                    custom_exception=lambda detail, status_code: FolderException(
-                        detail=detail,
-                        folder_id=folder_id,
-                        status_code=status_code
-                    )
+                    error_msg=f"Failed to retrieve folder {folder_id}"
                 )
             )
             folder = Folder.from_graph_folder(folder)

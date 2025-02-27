@@ -148,11 +148,7 @@ def init_app() -> FastAPI:
     Made with ❤️ by Dillon Gaughan                                        
                 """)
     return app_init
-
-
-
-
-
+    
 
 
 def create_services(graph, graph_translator, repositories):
@@ -197,7 +193,7 @@ def register_routes(app_for_routes, graph, services):
         tags=["attachment"]
     )
     app_for_routes.include_router(
-        folder_controller(graph, services['folder'], services['paginated_email'], services['session_store']), 
+        folder_controller(graph, services['folder'], services['paginated_email']), 
         prefix="/folders", 
         tags=["folders"]
     )

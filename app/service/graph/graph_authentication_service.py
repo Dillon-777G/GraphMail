@@ -41,9 +41,9 @@ class Graph:
         self.credential: Optional[AuthorizationCodeCredential] = None
         self.logger = logging.getLogger(__name__)
         self._state_store: Dict[str, datetime] = {}  # Store states with timestamps
-        self.STATE_TIMEOUT = 300  # 5 minutes timeout for states # pylint: disable=invalid-name
+        self.STATE_TIMEOUT = 300 # 5 minute timeout  # pylint: disable=invalid-name
         self.token_expires_at: Optional[datetime] = None
-        self.token_refresh_window = 300  # Refresh token 5 minutes before expiration
+        self.token_refresh_window = 300 # 5 minute refresh window  # Refresh token before expiration
 
         # init check
         self .is_loaded()
@@ -185,7 +185,7 @@ class Graph:
 
         try:
             # Refresh the token by calling get_token with unpacked scopes.
-            token_response = await self.credential.get_token(*self.config["scopes"])
+            token_response = self.credential.get_token(*self.config["scopes"])
             if token_response.expires_on:
                 self.token_expires_at = datetime.utcfromtimestamp(token_response.expires_on)
                 self.logger.info("Token refreshed successfully; new expiration at %s", self.token_expires_at)
@@ -202,7 +202,7 @@ class Graph:
 
 
 
-    async def ensure_authenticated(self, authorization_code: Optional[str] = None, state: Optional[str] = None) -> Dict[str, Any]:
+    async def ensure_authenticated(self, authorization_code: Optional[str] = None ) -> Dict[str, Any]:
         """
         Ensures the Graph client is authenticated. If not initialized
         and an authorization code is provided, exchanges it for a token.
@@ -247,16 +247,6 @@ class Graph:
             case (False, False, _):
                 self.logger.info("No credentials and no auth code; initiating login flow.")
                 return {"authenticated": False, "auth_url": self.get_authorization_url()}
-            
-            # Case 4: No credentials, but an auth code is provided.
-            case (False, True, _):
-                try:
-                    await self.exchange_code_for_token(authorization_code, state)
-                    self.logger.info("Successfully authenticated via auth code exchange.")
-                    return {"authenticated": True, "auth_url": None}
-                except AuthenticationFailedException as e:
-                    self.logger.error("Authentication failed: %s", e)
-                    raise
 
 
 

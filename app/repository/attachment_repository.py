@@ -38,7 +38,7 @@ class AttachmentRepository:
         retry_context = RetryContext(
             operation=lambda: self._persist_attachment(attachment),
             error_msg="Failed to persist attachment",
-            custom_exception=AttachmentPersistenceException
+            abort_on_exceptions=[AttachmentPersistenceException]
         )
         
         return await self.retry_service.retry_operation(retry_context)

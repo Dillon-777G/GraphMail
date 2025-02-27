@@ -28,7 +28,7 @@ class AttachmentFileService:
             with open(attachment.url, 'wb') as file:
                 file.write(content)
 
-            os.chmod(attachment.url, 0o664)
+            os.chmod(attachment.url, 0o644) # should be rw r-- r--
                 
             self.logger.info("Successfully saved attachment file to file system path: %s", attachment.url)
             

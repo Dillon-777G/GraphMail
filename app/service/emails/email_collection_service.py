@@ -276,8 +276,7 @@ class EmailCollectionService:
             operation=fetch,
             error_msg=f"Error fetching page {page_num}",
             metrics_recorder=lambda: metrics.record_page_retry() if metrics else None,
-            error_recorder=lambda: metrics.record_page_error() if metrics else None,
-            custom_exception=EmailException
+            error_recorder=lambda: metrics.record_page_error() if metrics else None
         )
         return await self.retry_service.retry_operation(retry_context)
 
@@ -384,6 +383,5 @@ class EmailCollectionService:
                 operation=operation,
                 error_msg=f"Error translating batch {batch_num}/{total_batches}",
                 metrics_recorder=lambda: metrics.record_translation_retry() if metrics else None,
-                error_recorder=lambda: metrics.record_translation_error() if metrics else None,
-                custom_exception=IdTranslationException
+                error_recorder=lambda: metrics.record_translation_error() if metrics else None
             )

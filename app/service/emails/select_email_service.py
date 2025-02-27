@@ -203,8 +203,7 @@ class SelectEmailService:
     async def _translate_ids_parallel(self, selection_dto: EmailSelectionDTO) -> Dict[str,str]:
         translate_context = RetryContext(
                 operation=lambda: self._batch_translate_ids(selection_dto.email_source_ids),
-                error_msg="Failed to translate IDs",
-                custom_exception=IdTranslationException
+                error_msg="Failed to translate IDs"
             )
         translated_ids = await self.retry_service.retry_operation(translate_context)
         id_mapping = {item["source_id"]: item["target_id"] for item in translated_ids}

@@ -7,14 +7,12 @@ from app.service.folder_service import FolderService
 from app.service.graph.graph_authentication_service import Graph
 from app.service.emails.paginated_email_service import PaginatedEmailService
 from app.controllers.fAPI_dependencies.auth_dependency import AuthDependency
-from app.service.session_store.session_store_service import SessionStore
 
 
 def folder_controller(
     graph: Graph, 
     folder_service: FolderService, 
     paginated_email_service: PaginatedEmailService, 
-    session_store: SessionStore
 ) -> APIRouter:
     router = APIRouter()
     auth = AuthDependency(graph)
@@ -22,7 +20,6 @@ def folder_controller(
 
     @router.get("/root")
     async def list_root_folders(
-        order_id: int, 
         auth_response: Union[Dict[str,str], None] = Depends(auth)
     ):
         """
@@ -34,13 +31,11 @@ def folder_controller(
         the email bridge.
         """
         if auth_response:
-            # Store order_id with the state before redirecting
-            state = auth_response["auth_url"].split("state=")[1].split("&")[0]
-            session_store.store_order_id(state, order_id)
             return auth_response
 
-        logger.info("Received request to list root folders for order %s", order_id)
+        # logger.info("Received request to list root folders for order %s", order_id)
         folders = await folder_service.get_root_folders()
+        logger.info("Root folders: %s", [folder.model_dump() for folder in folders])
         return {
             "status": "success",
             "data": [folder.model_dump() for folder in folders]

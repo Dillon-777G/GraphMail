@@ -78,8 +78,7 @@ class PaginatedEmailService:
                 operation=lambda: self.graph.client.me.mail_folders.by_mail_folder_id(
                     folder_id
                 ).messages.get(request_configuration=page_config),
-                error_msg=f"Error fetching paginated emails from folder {folder_id} on page {page}",
-                custom_exception=EmailException
+                error_msg=f"Error fetching paginated emails from folder {folder_id} on page {page}"
             )
 
 

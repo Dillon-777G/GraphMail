@@ -11,7 +11,7 @@ from app.error_handling.exceptions.recursive_email_exception import RecursiveEma
 from app.error_handling.exceptions.email_persistence_exception import EmailPersistenceException
 from app.error_handling.exception_handler_manager import ExceptionHandlerManager
 from app.error_handling.exceptions.db_email_recipient_exception import DBEmailRecipientException
-
+from app.error_handling.exceptions.attachment_persistence_exception import AttachmentPersistenceException
 def get_exception_handlers(handler: ExceptionHandlerManager) -> dict:
     """
     Returns a mapping of exceptions to their handlers.
@@ -27,9 +27,10 @@ def get_exception_handlers(handler: ExceptionHandlerManager) -> dict:
         GraphResponseException: handler.handle_graph_response_error,
         RecursiveEmailException: handler.handle_recursive_email_error,
         EmailPersistenceException: handler.handle_email_persistence_error,
+        AttachmentPersistenceException: handler.handle_attachment_persistence_error,
         NoResultFound: handler.handle_no_result_found,
         Exception: handler.handle_global_error,
         ValueError: handler.handle_value_error,
         ClientAuthenticationError: handler.handle_client_authentication_error,
-        DBEmailRecipientException: handler.handle_db_email_recipient_error,
+        DBEmailRecipientException: handler.handle_db_email_recipient_error
     } 
