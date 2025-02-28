@@ -1,4 +1,7 @@
+# Python imports
 from typing import List, Optional
+
+# Third party imports
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 

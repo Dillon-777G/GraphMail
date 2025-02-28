@@ -1,19 +1,19 @@
-from typing import List, Tuple
+# Python standard library imports
 import logging
+from typing import List, Tuple
 
+# Third party imports
 import pymysql
-from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from app.persistence.base_connection import get_db
-
-from app.models.persistence_models.email_orm import DBEmail
+# Application imports
 from app.error_handling.exceptions.email_persistence_exception import EmailPersistenceException
-
-from app.service.retry_service import RetryService
+from app.models.persistence_models.email_orm import DBEmail
 from app.models.retries.retry_context import RetryContext
 from app.models.retries.retry_enums import RetryProfile
-
+from app.persistence.base_connection import get_db
+from app.service.retry_service import RetryService
 from app.utils.constants.repository_constants import RepositoryConstants
 
 """

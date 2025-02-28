@@ -1,13 +1,15 @@
-from typing import Union, Dict, Any
+# Python standard library imports
 import logging
+from typing import Any, Dict, Union
 
-from fastapi import APIRouter, Depends, Body
+# Third party imports
+from fastapi import APIRouter, Body, Depends
 
-
-from app.service.emails.select_email_service import SelectEmailService
-from app.service.graph.graph_authentication_service import Graph
+# Application imports
 from app.controllers.fAPI_dependencies.auth_dependency import AuthDependency
 from app.models.dto.email_selection_dto import EmailSelectionDTO
+from app.service.emails.select_email_service import SelectEmailService
+from app.service.graph.graph_authentication_service import Graph
 
 def email_controller(
     graph: Graph,

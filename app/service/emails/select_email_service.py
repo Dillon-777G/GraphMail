@@ -1,24 +1,34 @@
-from typing import List, Dict
+# Python standard library imports
 import logging
+from typing import Dict, List
 
-from app.service.graph.graph_authentication_service import Graph
-from app.service.graph.graph_id_translation_service import GraphIDTranslator
-from app.service.emails.paginated_email_service import PaginatedEmailService
+# Third party imports
+from kiota_abstractions.api_error import APIError
 
+# Application imports
+# Error handling
+from app.error_handling.exceptions.email_exception import EmailException
+from app.error_handling.exceptions.email_persistence_exception import EmailPersistenceException
+from app.error_handling.exceptions.id_translation_exception import IdTranslationException
+
+# Models
+from app.models.dto.email_selection_dto import EmailSelectionDTO
 from app.models.email import Email
 from app.models.persistence_models.email_orm import DBEmail
-from app.models.retries.retry_enums import RetryProfile
-from app.models.dto.email_selection_dto import EmailSelectionDTO
-
-from app.error_handling.exceptions.email_exception import EmailException
-from app.error_handling.exceptions.id_translation_exception import IdTranslationException
-from app.error_handling.exceptions.email_persistence_exception import EmailPersistenceException
-
-from app.service.retry_service import RetryService
 from app.models.retries.retry_context import RetryContext
+from app.models.retries.retry_enums import RetryProfile
 
-from app.repository.email_repository import EmailRepository
+# Repositories
 from app.repository.email_recipient_repository import EmailRecipientRepository
+from app.repository.email_repository import EmailRepository
+
+# Services
+from app.service.emails.paginated_email_service import PaginatedEmailService
+from app.service.graph.graph_authentication_service import Graph
+from app.service.graph.graph_id_translation_service import GraphIDTranslator
+from app.service.retry_service import RetryService
+
+# Utils
 from app.utils.email_utils import EmailUtils
 
 
@@ -118,6 +128,9 @@ class SelectEmailService:
 
             return successful_email_ids, duplicate_email_ids, failed_email_ids
 
+        except APIError as e:
+            self.logger.error("API Error in select and persist operation: %s", str(e))
+            raise e
         except EmailPersistenceException as e:
             if e.is_duplicate_error():
                 self.logger.warning("Attempted to persist duplicate emails: %s", e.message_ids)
@@ -153,6 +166,10 @@ class SelectEmailService:
             try:
                 translated_batch = await self.graph_translator.translate_ids(batch)
                 all_translated_ids.extend(translated_batch)
+                
+            except APIError as e:
+                self.logger.error("API Error in _batch_translate_ids: %s", str(e))
+                raise e
             except Exception as e:
                 self.logger.error("Error translating batch of IDs: %s", str(e))
                 raise IdTranslationException(

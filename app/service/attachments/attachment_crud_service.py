@@ -1,7 +1,10 @@
+# Python standard library imports
 import logging
 
+# Application imports
 from app.repository.attachment_repository import AttachmentRepository
 from app.models.persistence_models.attachment_orm import DBAttachment
+
 logger = logging.getLogger(__name__)
 
 class AttachmentCRUDService:

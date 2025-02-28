@@ -1,7 +1,9 @@
+# Third party imports
 from fastapi import Request
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
+# Local imports
 from app.error_handling.handlers.base_handler import BaseExceptionHandler
 
 class ValidationHandler(BaseExceptionHandler):

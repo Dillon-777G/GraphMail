@@ -1,5 +1,8 @@
-from typing import Optional
+# Python standard library imports
 import logging
+from typing import Optional
+
+# Local imports
 from .base_metrics import BaseMetrics
 
 class AttachmentMetrics(BaseMetrics):

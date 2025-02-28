@@ -1,5 +1,8 @@
+# Python standard library imports
 import logging
-from typing import Any, TypeVar, List, Type
+from typing import Any, List, Type, TypeVar
+
+# Application imports 
 from app.error_handling.exceptions.graph_response_exception import GraphResponseException
 
 T = TypeVar("T")

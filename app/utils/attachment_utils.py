@@ -1,5 +1,7 @@
+# Python standard library imports
 import logging
 
+# Application imports
 from app.models.email_attachment import EmailAttachment
 from app.models.persistence_models.attachment_orm import DBAttachment
 

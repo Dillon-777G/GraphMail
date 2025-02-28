@@ -1,6 +1,8 @@
+# Python standard library imports
 import os
 import logging
 
+# Application imports
 from app.models.persistence_models.attachment_orm import DBAttachment
 from app.error_handling.exceptions.attachment_persistence_exception import AttachmentPersistenceException
 

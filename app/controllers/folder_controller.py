@@ -1,12 +1,15 @@
+# Python standard library imports
 import logging
-from typing import Union, Dict, Any
+from typing import Any, Dict, Union
 
+# Third party imports
 from fastapi import APIRouter, Depends, Query
 
+# Application imports
+from app.controllers.fAPI_dependencies.auth_dependency import AuthDependency
+from app.service.emails.paginated_email_service import PaginatedEmailService
 from app.service.folder_service import FolderService
 from app.service.graph.graph_authentication_service import Graph
-from app.service.emails.paginated_email_service import PaginatedEmailService
-from app.controllers.fAPI_dependencies.auth_dependency import AuthDependency
 
 
 def folder_controller(

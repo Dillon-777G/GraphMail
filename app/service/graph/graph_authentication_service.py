@@ -1,13 +1,17 @@
+# Python standard library imports
+from datetime import datetime, timedelta
 import logging
 import os
-from typing import Optional, Dict, Any
 import secrets
-from datetime import datetime, timedelta
+from typing import Any, Dict, Optional
 
-from azure.identity import AuthorizationCodeCredential
+# Third party imports
 from azure.core.exceptions import ClientAuthenticationError
+from azure.identity import AuthorizationCodeCredential
+from kiota_abstractions.api_error import APIError
 from msgraph import GraphServiceClient
 
+# Application imports
 from app.error_handling.exceptions.authentication_exception import AuthenticationFailedException
 
 """
@@ -120,6 +124,8 @@ class Graph:
         self._state_store.pop(received_state)
         return is_valid
 
+
+
     async def exchange_code_for_token(self, authorization_code: str, state: Optional[str] = None):
         """
         Exchanges the authorization code for an access token with state verification.
@@ -155,7 +161,9 @@ class Graph:
             
             self.logger.info("Graph client initialized successfully; token expires at %s", self.token_expires_at)
 
-
+        except APIError as e:
+            self.logger.error("API Error in exchange_code_for_token: %s", str(e))
+            raise e
         except Exception as e:
             self.logger.error("Failed to exchange code for token: %s", e)
             # Clear potentially corrupted state
@@ -192,6 +200,10 @@ class Graph:
                 return True
             self.logger.error("Token response did not contain an expiration time.")
             return False
+
+        except APIError as e:
+            self.logger.error("API Error in refresh_token_if_needed: %s", str(e))
+            raise e
         except ClientAuthenticationError as e:
             self.logger.error("Failed to refresh token: %s", e)
             if "AADSTS70008" in str(e):

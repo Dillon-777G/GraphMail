@@ -1,6 +1,8 @@
+# FastAPI imports
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+# App imports 
 from app.error_handling.exceptions.recursive_email_exception import RecursiveEmailException
 from app.error_handling.handlers.base_handler import BaseExceptionHandler
 

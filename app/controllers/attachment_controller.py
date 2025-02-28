@@ -1,11 +1,14 @@
+# Python standard library imports
 import logging
-from typing import Union, Dict
+from typing import Dict, Union
 
+# Third party imports
 from fastapi import APIRouter, Depends
 
+# Application imports
+from app.controllers.fAPI_dependencies.auth_dependency import AuthDependency
 from app.service.attachments.attachment_graph_service import AttachmentGraphService
 from app.service.graph.graph_authentication_service import Graph
-from app.controllers.fAPI_dependencies.auth_dependency import AuthDependency
 
 logger = logging.getLogger(__name__)
 

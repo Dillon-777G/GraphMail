@@ -1,20 +1,23 @@
+# Python standard library imports
 import logging
 from typing import List
 
+# Third party imports
+from kiota_abstractions.api_error import APIError
+from kiota_abstractions.base_request_configuration import RequestConfiguration
 from msgraph.generated.models.mail_folder_collection_response import MailFolderCollectionResponse
 from msgraph.generated.users.item.mail_folders.mail_folders_request_builder import MailFoldersRequestBuilder
 
-from kiota_abstractions.base_request_configuration import RequestConfiguration
-
-from app.models.folder import Folder
-from app.utils.graph_utils import GraphUtils
-from app.service.graph.graph_authentication_service import Graph
+# Application imports
 from app.error_handling.exceptions.folder_exception import FolderException
 from app.error_handling.exceptions.graph_response_exception import GraphResponseException
-from app.service.retry_service import RetryService
+from app.models.folder import Folder
+from app.models.metrics.folder_metrics import FolderMetrics
 from app.models.retries.retry_context import RetryContext
 from app.models.retries.retry_enums import RetryProfile
-from app.models.metrics.folder_metrics import FolderMetrics
+from app.service.graph.graph_authentication_service import Graph
+from app.service.retry_service import RetryService
+from app.utils.graph_utils import GraphUtils
 
 
 """
@@ -61,6 +64,9 @@ class FolderService:
             metrics.record_retrieval(len(folders))
             return folders
 
+        except APIError as e:
+            self.logger.error("API Error in get_root_folders: %s", str(e))
+            raise e
         except GraphResponseException as e:
             self.logger.error("Graph API error retrieving root folders: %s", str(e))
             metrics.record_retrieval_failure("root", str(e))
@@ -104,6 +110,9 @@ class FolderService:
             self.logger.info("Retrieved %d child folders for folder ID: %s", len(folders), folder_id)
             return folders
 
+        except APIError as e:
+            self.logger.error("API Error in get_child_folders: %s", str(e))
+            raise e
         except Exception as e:
             self.logger.error("Error retrieving child folders for folder ID %s: %s", folder_id, str(e))
             metrics.record_retrieval_failure(folder_id, str(e))
@@ -138,6 +147,9 @@ class FolderService:
             self.logger.info("Retrieved folder: %s", folder.display_name)
             return folder
 
+        except APIError as e:
+            self.logger.error("API Error retrieving folder %s: %s", folder_id, e)
+            raise
         except Exception as e:
             self.logger.error("Error retrieving folder %s: %s", folder_id, e)
             metrics.record_retrieval_failure(folder_id, str(e))

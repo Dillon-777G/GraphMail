@@ -1,18 +1,24 @@
+# Python standard library imports
 import logging
-from typing import List, AsyncGenerator, Union, Dict, Any
+from typing import Any, AsyncGenerator, Dict, List, Union
 
-from app.models.email import Email
-from app.service.folder_service import FolderService
-from app.service.emails.email_collection_service import EmailCollectionService
-from app.error_handling.exceptions.folder_exception import FolderException
+# Third party imports
+from kiota_abstractions.api_error import APIError
+
+# Application imports
 from app.error_handling.exceptions.email_exception import EmailException
-from app.error_handling.exceptions.recursive_email_exception import RecursiveEmailException
 from app.error_handling.exceptions.email_persistence_exception import EmailPersistenceException
-from app.service.emails.email_cache_service import EmailCacheService
-from app.repository.email_repository import EmailRepository
+from app.error_handling.exceptions.folder_exception import FolderException
+from app.error_handling.exceptions.recursive_email_exception import RecursiveEmailException
 from app.models.dto.recursive_email_request_dto import RecursiveEmailRequestDTO
-from app.utils.email_utils import EmailUtils
+from app.models.email import Email
 from app.repository.email_recipient_repository import EmailRecipientRepository
+from app.repository.email_repository import EmailRepository
+from app.service.emails.email_cache_service import EmailCacheService
+from app.service.emails.email_collection_service import EmailCollectionService
+from app.service.folder_service import FolderService
+from app.utils.email_utils import EmailUtils
+
 class RecursiveEmailService:
     def __init__(
         self, 
@@ -85,15 +91,18 @@ class RecursiveEmailService:
                     }
                 }
                 return  # Successfully completed
-            else:
-                # Only raise exception if no emails were found
-                yield {"status": "warning", "message": "No emails were found to process"}
-                raise RecursiveEmailException(
-                    detail="Failed to recursively retrieve emails, no emails were retrieved.",
-                    folder_id=folder_id,
-                    status_code=500
-                )
 
+            # Only raise exception if no emails were found
+            yield {"status": "warning", "message": "No emails were found to process"}
+            raise RecursiveEmailException(
+                detail="Failed to recursively retrieve emails, no emails were retrieved.",
+                folder_id=folder_id,
+                status_code=500
+            )
+
+        except APIError as e:
+            self.logger.error("API Error in get_all_emails_recursively: %s", str(e))
+            raise  # Use bare raise here to preserve the original exception context
         except EmailPersistenceException as e:
             self.logger.warning("No emails were saved: %s", str(e))
             yield {"status": "error", "message": f"No emails were saved: {str(e)}"}
@@ -165,6 +174,9 @@ class RecursiveEmailService:
                 try:
                     async for item in self._get_all_emails_recursively_internal(folder.id):
                         yield item
+                except APIError as e:
+                    self.logger.error("API Error in _get_all_emails_recursively_internal for folder %s: %s", folder_id, str(e))
+                    raise  # Let it propagate to parent for global handling
                 except (FolderException, EmailException) as e:
                     self.logger.warning(
                         "Skipping problematic subfolder %s: %s",

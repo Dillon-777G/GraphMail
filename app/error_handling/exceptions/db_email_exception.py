@@ -1,4 +1,7 @@
+# Python imports
 from typing import Optional
+
+# Third party imports
 from fastapi import HTTPException
 
 class DBEmailException(HTTPException):

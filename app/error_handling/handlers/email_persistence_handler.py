@@ -1,6 +1,8 @@
+# Third party imports
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
+# Local imports
 from app.error_handling.exceptions.email_persistence_exception import EmailPersistenceException
 from app.error_handling.handlers.base_handler import BaseExceptionHandler
 

@@ -1,14 +1,17 @@
+# Python standard library imports
 import logging
-from typing import List, Any, Dict
+from typing import Any, Dict, List
 
-
+# Third party imports
+from kiota_abstractions.api_error import APIError
+from msgraph.generated.models.exchange_id_format import ExchangeIdFormat
 from msgraph.generated.users.item.translate_exchange_ids.translate_exchange_ids_post_request_body import (
     TranslateExchangeIdsPostRequestBody,
 )
-from msgraph.generated.models.exchange_id_format import ExchangeIdFormat
 
-from app.service.graph.graph_authentication_service import Graph
+# Application imports
 from app.error_handling.exceptions.id_translation_exception import IdTranslationException
+from app.service.graph.graph_authentication_service import Graph
 
 
 class GraphIDTranslator:
@@ -56,6 +59,9 @@ class GraphIDTranslator:
                 for item in result.value
             ]
 
+        except APIError as e:
+            self.logger.error("API Error in translate_ids: %s", str(e))
+            raise e
         except IdTranslationException as e:
             self.logger.error("Error translating IDs: %s", e)
             raise

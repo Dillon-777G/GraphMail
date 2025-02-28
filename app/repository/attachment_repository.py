@@ -1,18 +1,27 @@
+# Python standard library imports
 import logging
 
+# Third party imports
 import pymysql
 from sqlalchemy.exc import IntegrityError
 
-from app.persistence.base_connection import get_db
-from app.models.persistence_models.attachment_orm import DBAttachment
-
+# Application imports
+# Error handling
 from app.error_handling.exceptions.attachment_persistence_exception import AttachmentPersistenceException
 
-from app.utils.constants.repository_constants import RepositoryConstants
-
-from app.service.retry_service import RetryService
+# Models
+from app.models.persistence_models.attachment_orm import DBAttachment
 from app.models.retries.retry_context import RetryContext
 from app.models.retries.retry_enums import RetryProfile
+
+# Persistence
+from app.persistence.base_connection import get_db
+
+# Services
+from app.service.retry_service import RetryService
+
+# Utils
+from app.utils.constants.repository_constants import RepositoryConstants
 
 
 class AttachmentRepository:

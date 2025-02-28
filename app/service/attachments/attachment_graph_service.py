@@ -130,6 +130,7 @@ class AttachmentGraphService:
             APIError: If there's an API-specific error (allowing parent to handle)
         """
         async def fetch():
+            self.logger.info("Fetching attachment: %s", attachment_id)
             return await (
                 self.graph.client.me.mail_folders
                 .by_mail_folder_id(folder_id)
@@ -144,11 +145,14 @@ class AttachmentGraphService:
         )
 
         try:
-            return await self.retry_service.retry_operation(retry_context)
+            result = await self.retry_service.retry_operation(retry_context)
+            self.logger.info("Attachment fetched: %s", str(result))
+            return result
         except APIError:
             # Let APIError propagate to parent for handling
             raise
         except Exception as e:
+            self.logger.error("Error retrieving attachment: %s", str(e))
             raise EmailAttachmentException(
                 detail=f"Error retrieving attachment: {str(e)}",
                 attachment_id=attachment_id,
@@ -171,12 +175,13 @@ class AttachmentGraphService:
         Raises:
             EmailAttachmentException: If the attachment is invalid or content cannot be decoded.
         """
+        self.logger.info("Processing attachment: %s", raw_attachment)
         attachment = EmailAttachment.graph_email_attachment(raw_attachment)
         attachment.is_valid_file_attachment()
 
         # Create and save DB record
         db_attachment = AttachmentUtils.attachment_to_db_attachment(attachment, email_id)
-        print(f"DB Attachment url: {db_attachment.url}")
+        self.logger.info("DB Attachment url: %s", db_attachment.url)
         await self.attachment_crud_service.save_attachment(db_attachment)
 
         content_bytes = attachment.content_bytes
@@ -263,6 +268,10 @@ class AttachmentGraphService:
             result = await self.retry_service.retry_operation(retry_context)
             metrics.current_phase = "complete"
             return result
+
+        except APIError as e:
+            self.logger.error("Failed to retrieve attachments for message %s: %s", message_id, str(e))
+            raise
         except GraphResponseException as e:
             self.logger.error("Failed to retrieve attachments for message %s: %s", message_id, str(e))
             raise

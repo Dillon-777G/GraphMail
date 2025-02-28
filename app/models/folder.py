@@ -1,4 +1,7 @@
+# Standard library imports
 from typing import Optional
+
+# Third party imports
 from pydantic import BaseModel
 
 """

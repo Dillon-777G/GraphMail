@@ -1,4 +1,8 @@
-from pydantic import BaseModel
+# Third party imports
+from pydantic import (
+    BaseModel,
+    ConfigDict
+)
 
 
 class RecursiveEmailRequestDTO(BaseModel):
@@ -14,7 +18,7 @@ class RecursiveEmailRequestDTO(BaseModel):
     ref_id: int
     created_by: int
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "example": {
                 "ref_type": "folder",
@@ -22,3 +26,4 @@ class RecursiveEmailRequestDTO(BaseModel):
                 "created_by": 1234567890
             }
         }
+    )

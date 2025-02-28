@@ -1,3 +1,4 @@
+# Third party imports
 from fastapi import HTTPException
 
 class EmailAttachmentException(HTTPException):

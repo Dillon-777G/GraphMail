@@ -1,8 +1,11 @@
+# Standard library imports
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, Field
-from msgraph.generated.models.message_collection_response import MessageCollectionResponse
+
+# Third party imports
 from bs4 import BeautifulSoup
+from msgraph.generated.models.message_collection_response import MessageCollectionResponse
+from pydantic import BaseModel, ConfigDict, Field
 
 """
 SUMMARY:
@@ -14,8 +17,7 @@ For any specific details, please refer to the Microsoft Graph API documentation.
 LINK: https://learn.microsoft.com/en-us/graph/api/resources/message?view=graph-rest-1.0
 """
 class Email(BaseModel):
-    class Config:
-        allow_mutation = False
+    model_config = ConfigDict(frozen=True)
 
     subject: Optional[str] = "No Subject"
     sender: Optional[str] = "Unknown"

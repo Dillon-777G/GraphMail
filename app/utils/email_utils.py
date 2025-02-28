@@ -1,16 +1,19 @@
-import logging
+# Python standard library imports
 from datetime import datetime
+import logging
 from typing import List
 
+# Application imports
+# Error handling
+from app.error_handling.exceptions.db_email_exception import DBEmailException
+from app.error_handling.exceptions.db_email_recipient_exception import DBEmailRecipientException
 
+# Models
 from app.models.dto.email_selection_dto import EmailSelectionDTO
 from app.models.email import Email
 from app.models.persistence_models.email_orm import DBEmail
 from app.models.persistence_models.email_recipient_orm import DBEmailRecipient
 from app.models.persistence_models.email_recipient_types import RecipientType
-
-from app.error_handling.exceptions.db_email_exception import DBEmailException
-from app.error_handling.exceptions.db_email_recipient_exception import DBEmailRecipientException
 
 logger = logging.getLogger(__name__)
 

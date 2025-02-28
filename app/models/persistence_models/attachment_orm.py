@@ -1,8 +1,10 @@
+# Third party imports
 from sqlalchemy import Column, Integer, String
 
+# Local imports
+from app.config.environment_config import EnvironmentConfig
 from app.persistence.base_connection import Base
 
-from app.config.environment_config import EnvironmentConfig
 
 class DBAttachment(Base):
     __tablename__ = "tbl_email_attachment"

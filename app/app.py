@@ -1,44 +1,53 @@
+# Python standard library imports
 import logging
 from contextlib import asynccontextmanager
 
+# Third party imports
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.logging.logging_config import setup_logging
+# Application imports
+# Config
+from app.config.environment_config import EnvironmentConfig
 
-from app.controllers.auth_controller import auth_controller
+# Controllers
 from app.controllers.attachment_controller import attachment_controller
+from app.controllers.auth_controller import auth_controller
+from app.controllers.email_persistence_controller import email_controller
 from app.controllers.folder_controller import folder_controller
 from app.controllers.recursive_email_controller import recursive_email_controller
-from app.controllers.email_persistence_controller import email_controller
 
-from app.service.graph.graph_authentication_service import Graph
-from app.service.graph.graph_id_translation_service import GraphIDTranslator
-from app.service.emails.paginated_email_service import PaginatedEmailService
-from app.service.emails.email_collection_service import EmailCollectionService
-from app.service.folder_service import FolderService
-from app.service.attachments.attachment_graph_service import AttachmentGraphService
-from app.service.emails.recursive_email_service import RecursiveEmailService
-from app.service.emails.select_email_service import SelectEmailService
-from app.service.emails.email_cache_service import EmailCacheService
-from app.service.attachments.attachment_file_service import AttachmentFileService
-from app.service.session_store.session_store_service import SessionStore
-
-from app.service.emails.email_crud_service import EmailCRUDService
-from app.service.attachments.attachment_crud_service import AttachmentCRUDService
-
-from app.repository.email_repository import EmailRepository
-from app.repository.attachment_repository import AttachmentRepository
-from app.repository.email_recipient_repository import EmailRecipientRepository
+# Error handling
 from app.error_handling.exception_config import get_exception_handlers
 from app.error_handling.exception_handler_manager import ExceptionHandlerManager
 
-from app.config.environment_config import EnvironmentConfig
+# Logging
+from app.logging.logging_config import setup_logging
 
+# Persistence
 from app.persistence.base_connection import init_db
+
+# Repositories
+from app.repository.attachment_repository import AttachmentRepository
+from app.repository.email_recipient_repository import EmailRecipientRepository
+from app.repository.email_repository import EmailRepository
+
+# Services
+from app.service.attachments.attachment_crud_service import AttachmentCRUDService
+from app.service.attachments.attachment_file_service import AttachmentFileService
+from app.service.attachments.attachment_graph_service import AttachmentGraphService
+from app.service.emails.email_cache_service import EmailCacheService
+from app.service.emails.email_collection_service import EmailCollectionService
+from app.service.emails.email_crud_service import EmailCRUDService
+from app.service.emails.paginated_email_service import PaginatedEmailService
+from app.service.emails.recursive_email_service import RecursiveEmailService
+from app.service.emails.select_email_service import SelectEmailService
+from app.service.folder_service import FolderService
+from app.service.graph.graph_authentication_service import Graph
+from app.service.graph.graph_id_translation_service import GraphIDTranslator
+from app.service.session_store.session_store_service import SessionStore
 
 
 
@@ -125,6 +134,9 @@ def init_app() -> FastAPI:
     # Initialize services
     services = create_services(graph, graph_translator, repositories)
 
+    # Add exception handler manager to services
+    services['exception_handler_manager'] = handler
+
     # Register routes
     register_routes(app_init, graph, services)
 
@@ -198,7 +210,11 @@ def register_routes(app_for_routes, graph, services):
         tags=["folders"]
     )
     app_for_routes.include_router(
-        recursive_email_controller(graph, services['recursive_email']), 
+        recursive_email_controller(
+            graph, 
+            services['recursive_email'], 
+            services['exception_handler_manager']
+        ), 
         prefix="/recursive_emails", 
         tags=["recursive_emails"]
     )

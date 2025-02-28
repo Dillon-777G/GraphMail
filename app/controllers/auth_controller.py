@@ -1,12 +1,16 @@
+# Python standard library imports
 import logging
-from typing import Union, Dict, Optional
+from typing import Dict, Optional, Union
 
-from fastapi import APIRouter, Request, Depends
+# Third party imports
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
-from app.service.graph.graph_authentication_service import Graph
-from app.service.session_store.session_store_service import SessionStore
+
+# Application imports
 from app.controllers.fAPI_dependencies.auth_dependency import AuthDependency
 from app.error_handling.exceptions.authentication_exception import AuthenticationFailedException
+from app.service.graph.graph_authentication_service import Graph
+from app.service.session_store.session_store_service import SessionStore
 
 def auth_controller(graph: Graph, session_store: SessionStore) -> APIRouter:
     router = APIRouter()

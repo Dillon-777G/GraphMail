@@ -1,22 +1,26 @@
-from typing import List, Any, Dict, Union, AsyncGenerator, Tuple, Optional
+# Python standard library imports
+import asyncio
 import logging
 import time
-import asyncio
+from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple, Union
 
-from msgraph.generated.users.item.messages.messages_request_builder import MessagesRequestBuilder
-from msgraph.generated.models.message_collection_response import MessageCollectionResponse
+# Third party imports
+from kiota_abstractions.api_error import APIError
 from kiota_abstractions.base_request_configuration import RequestConfiguration
+from msgraph.generated.models.message_collection_response import MessageCollectionResponse
+from msgraph.generated.users.item.messages.messages_request_builder import MessagesRequestBuilder
 
-from app.utils.graph_utils import GraphUtils
-from app.service.graph.graph_authentication_service import Graph
-from app.service.graph.graph_id_translation_service import GraphIDTranslator
-from app.models.email import Email
+# Application imports
 from app.error_handling.exceptions.email_exception import EmailException
 from app.error_handling.exceptions.id_translation_exception import IdTranslationException
+from app.models.email import Email
 from app.models.metrics.batch_metrics import BatchMetrics
-from app.service.retry_service import RetryService
-from app.models.retries.retry_enums import RetryProfile
 from app.models.retries.retry_context import RetryContext
+from app.models.retries.retry_enums import RetryProfile
+from app.service.graph.graph_authentication_service import Graph
+from app.service.graph.graph_id_translation_service import GraphIDTranslator
+from app.service.retry_service import RetryService
+from app.utils.graph_utils import GraphUtils
 
 
 
@@ -95,6 +99,9 @@ class EmailCollectionService:
                 yield result
             self.logger.info("Email download service completed for folder: %s", folder_id)
 
+        except APIError as e:
+            self.logger.error("Error retrieving emails from folder %s: %s", folder_id, str(e))
+            raise
         except Exception as e:
             self.logger.error("Error retrieving emails from folder %s: %s", folder_id, str(e))
             raise EmailException(detail=str(e), status_code=500) from e

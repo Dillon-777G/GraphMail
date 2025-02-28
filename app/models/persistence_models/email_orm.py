@@ -1,6 +1,17 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
+# Third party imports
 from sqlalchemy.orm import relationship
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Integer,
+    String,
+    Text
+)
+
+# Local imports
 from app.persistence.base_connection import Base
+
 
 class DBEmail(Base):
     __tablename__ = "tbl_email_v2"

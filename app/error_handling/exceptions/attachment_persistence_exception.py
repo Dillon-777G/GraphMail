@@ -1,5 +1,7 @@
+# Third party imports
 from fastapi import HTTPException
 
+# App imports
 from app.models.persistence_models.attachment_orm import DBAttachment
 
 class AttachmentPersistenceException(HTTPException):

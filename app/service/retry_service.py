@@ -1,15 +1,17 @@
-import logging
+# Python standard library imports
 import asyncio
-import time
+import logging
 import random
+import time
 from typing import TypeVar
 
+# Third party imports
+from kiota_abstractions.api_error import APIError
 from sqlalchemy.exc import IntegrityError
 
-from kiota_abstractions.api_error import APIError
-
+# Application imports
 from app.models.retries.retry_context import RetryContext
-from app.models.retries.retry_enums import RetryProfile, RetryConfigurations
+from app.models.retries.retry_enums import RetryConfigurations, RetryProfile
 
 
 

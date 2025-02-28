@@ -1,13 +1,13 @@
+# Python standard library imports
 import logging
 from typing import List
 
-from app.models.persistence_models.email_recipient_orm import DBEmailRecipient
-
+# Application imports
 from app.error_handling.exceptions.email_persistence_exception import EmailPersistenceException
-
-from app.service.retry_service import RetryService, RetryProfile
+from app.models.persistence_models.email_recipient_orm import DBEmailRecipient
 from app.models.retries.retry_context import RetryContext
 from app.persistence.base_connection import get_db
+from app.service.retry_service import RetryProfile, RetryService
 
 
 class EmailRecipientRepository:

@@ -1,7 +1,9 @@
+# Third party imports
+from azure.core.exceptions import ClientAuthenticationError
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from azure.core.exceptions import ClientAuthenticationError
 
+# Local imports
 from app.error_handling.handlers.base_handler import BaseExceptionHandler
 
 class ClientAuthenticationHandler(BaseExceptionHandler):

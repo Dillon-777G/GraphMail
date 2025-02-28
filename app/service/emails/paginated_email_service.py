@@ -1,22 +1,23 @@
+# Python standard library imports
 import logging
 from typing import Any, Dict, List
+
+# Third party imports
+from kiota_abstractions.api_error import APIError
 from kiota_abstractions.base_request_configuration import RequestConfiguration
-
-from msgraph.generated.users.item.messages.messages_request_builder import MessagesRequestBuilder
 from msgraph.generated.models.message_collection_response import MessageCollectionResponse
+from msgraph.generated.users.item.messages.messages_request_builder import MessagesRequestBuilder
 
-from app.utils.graph_utils import GraphUtils
-
+# Application imports
+from app.error_handling.exceptions.email_exception import EmailException
 from app.models.email import Email
-from app.service.retry_service import RetryService
+from app.models.metrics.paginated_metrics import PaginatedMetrics
 from app.models.retries.retry_context import RetryContext
 from app.models.retries.retry_enums import RetryProfile
-from app.models.metrics.paginated_metrics import PaginatedMetrics
-
-from app.error_handling.exceptions.email_exception import EmailException
-
 from app.service.emails.email_cache_service import EmailCacheService
 from app.service.graph.graph_authentication_service import Graph
+from app.service.retry_service import RetryService
+from app.utils.graph_utils import GraphUtils
 
 """
 SUMMARY:
@@ -57,6 +58,11 @@ class PaginatedEmailService:
             folder_id, page, per_page, subject)
             """)
 
+            # Initialize vars that might be accessed in finally block
+            messages = None
+            total = 0
+            total_pages = 0
+            
             page = max(1, page)
             per_page = max(1, per_page)
             offset = (page - 1) * per_page
@@ -84,32 +90,39 @@ class PaginatedEmailService:
 
             result = await self.retry_service.retry_operation(retry_context)
             messages = GraphUtils.get_collection_value(result, MessageCollectionResponse)
-            total = getattr(result, 'odata_count', len(messages))
-            total_pages = (total + per_page - 1) // per_page
-            emails = [Email.from_graph_message_without_id(msg) for msg in messages]
-            email_count = len(emails)
-            self.email_cache.store_folder_emails(folder_id, emails) # here we are calling the cache service to store the emails
+            if messages:
+                total = getattr(result, 'odata_count', len(messages))
+                total_pages = (total + per_page - 1) // per_page
+                emails = [Email.from_graph_message_without_id(msg) for msg in messages]
+                email_count = len(emails)
+                self.email_cache.store_folder_emails(folder_id, emails) # here we are calling the cache service to store the emails
             
-            return {
-                "data": emails,
-                "elements_on_page": email_count,
-                "total_elements": total,
-                "total_pages": total_pages,
-                "metrics": metrics.get_progress_info()
-            }
-
+                return {
+                    "data": emails,
+                    "elements_on_page": email_count,
+                    "total_elements": total,
+                    "total_pages": total_pages,
+                    "metrics": metrics.get_progress_info()
+                }
+            
+            raise ValueError(f"No emails found for folder {folder_id} on page {page}")
+                
+        except APIError as e:
+            self.logger.error("API Error in get paginated emails by folder id: %s", str(e))
+            raise e
         except Exception as e:
             self.logger.error("Error retrieving paginated emails from folder %s: %s", folder_id, str(e))
             raise EmailException(detail=str(e), status_code=500) from e
         finally:
-            metrics.emails_processed = len(messages) if messages else None
-            metrics.total_count = total
-            metrics.current_phase = "complete" if total > 0 else "complete with empty result"
-            metrics.current_page = page if total_pages > 0 else 0
-            metrics.items_per_page = per_page if total > 0 else 0
-            metrics.total_pages = total_pages
+            # Safely access variables that might not be defined
+            metrics.emails_processed = len(messages) if messages is not None else 0
+            metrics.total_count = total if 'total' in locals() else 0
+            metrics.current_phase = "complete" if 'total' in locals() and total > 0 else "complete with empty result"
+            metrics.current_page = page if 'total_pages' in locals() and total_pages > 0 else 0
+            metrics.items_per_page = per_page if 'total' in locals() and total > 0 else 0
+            metrics.total_pages = total_pages if 'total_pages' in locals() else 0
             metrics.end_processing()
-            metrics.log_final_metrics(self.logger)  # Using a final summary method similar to BatchMetrics.
+            metrics.log_final_metrics(self.logger)
 
         
     async def get_cached_emails_by_ids(

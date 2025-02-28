@@ -1,5 +1,7 @@
+# Python standard library imports
 import logging
 
+# Application imports
 from app.repository.email_repository import EmailRepository
 
 logger = logging.getLogger(__name__)

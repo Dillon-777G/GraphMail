@@ -1,21 +1,27 @@
+# Standard library imports
 from fastapi import Request
 
-from app.error_handling.handlers.authentication_handler import AuthenticationHandler
-from app.error_handling.handlers.email_handler import EmailHandler
-from app.error_handling.handlers.attachment_handler import AttachmentHandler
-from app.error_handling.handlers.id_translation_handler import IdTranslationHandler
-from app.error_handling.handlers.folder_handler import FolderHandler
-from app.error_handling.handlers.graph_response_handler import GraphResponseHandler
-from app.error_handling.handlers.recursive_email_handler import RecursiveEmailHandler
-from app.error_handling.handlers.global_handler import GlobalHandler
-from app.error_handling.handlers.email_persistence_handler import EmailPersistenceHandler
-from app.error_handling.handlers.validation_handler import ValidationHandler
+# Third party imports
+from kiota_abstractions.api_error import APIError
+
+# Error handler imports
+from app.error_handling.handlers.api_error_handler import APIErrorHandler
 from app.error_handling.handlers.api_not_found_handler import ApiNotFoundHandler
-from app.error_handling.handlers.no_result_handler import NoResultHandler
-from app.error_handling.handlers.value_error_handler import ValueErrorHandler
+from app.error_handling.handlers.attachment_handler import AttachmentHandler
+from app.error_handling.handlers.attachment_persistence_handler import AttachmentPersistenceHandler
+from app.error_handling.handlers.authentication_handler import AuthenticationHandler
 from app.error_handling.handlers.client_authentication_handler import ClientAuthenticationHandler
 from app.error_handling.handlers.db_email_recipient_handler import DBEmailRecipientHandler
-from app.error_handling.handlers.attachment_persistence_handler import AttachmentPersistenceHandler
+from app.error_handling.handlers.email_handler import EmailHandler
+from app.error_handling.handlers.email_persistence_handler import EmailPersistenceHandler
+from app.error_handling.handlers.folder_handler import FolderHandler
+from app.error_handling.handlers.global_handler import GlobalHandler
+from app.error_handling.handlers.graph_response_handler import GraphResponseHandler
+from app.error_handling.handlers.id_translation_handler import IdTranslationHandler
+from app.error_handling.handlers.no_result_handler import NoResultHandler
+from app.error_handling.handlers.recursive_email_handler import RecursiveEmailHandler
+from app.error_handling.handlers.validation_handler import ValidationHandler
+from app.error_handling.handlers.value_error_handler import ValueErrorHandler
 
 class ExceptionHandlerManager:
     """Coordinates all exception handlers by initializing and delegating to them."""
@@ -37,7 +43,8 @@ class ExceptionHandlerManager:
             'no_result': NoResultHandler(),
             'value_error': ValueErrorHandler(),
             'client_auth': ClientAuthenticationHandler(),
-            'db_email_recipient': DBEmailRecipientHandler()
+            'db_email_recipient': DBEmailRecipientHandler(),
+            'api_error': APIErrorHandler()
         }
 
     async def handle_authentication_error(self, request: Request, exc):
@@ -89,3 +96,6 @@ class ExceptionHandlerManager:
 
     async def handle_db_email_recipient_error(self, request: Request, exc):
         return await self.handlers['db_email_recipient'].handle_db_email_recipient_error(request, exc)
+
+    async def handle_api_error(self, request: Request, exc: APIError):
+        return await self.handlers['api_error'].handle_api_error(request, exc)

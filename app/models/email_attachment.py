@@ -1,7 +1,12 @@
-from typing import Optional, Literal, Union
-from pydantic import BaseModel, Field
+# Standard library imports
+from typing import Literal, Optional, Union
+
+# Third party imports
 from msgraph.generated.models.attachment import Attachment
 from msgraph.generated.models.attachment_collection_response import AttachmentCollectionResponse
+from pydantic import BaseModel, Field
+
+# Local imports
 from app.error_handling.exceptions.email_attachment_exception import EmailAttachmentException
 
 """

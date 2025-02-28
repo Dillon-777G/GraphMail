@@ -1,5 +1,8 @@
+# Python standard library imports
 import os
 from typing import Dict
+
+# Third party imports
 from dotenv import load_dotenv
 
 class EnvironmentConfig:

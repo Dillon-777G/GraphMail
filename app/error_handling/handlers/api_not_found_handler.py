@@ -1,6 +1,7 @@
+# Third party imports
 from fastapi import Request
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
+from fastapi.responses import JSONResponse
 
 from app.error_handling.handlers.base_handler import BaseExceptionHandler
 

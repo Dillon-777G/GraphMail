@@ -1,7 +1,10 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Enum
+# Third party imports
+from sqlalchemy import Column, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from app.persistence.base_connection import Base
+
+# Local imports
 from app.models.persistence_models.email_recipient_types import RecipientType
+from app.persistence.base_connection import Base
 
 class DBEmailRecipient(Base):
     __tablename__ = "tbl_email_recipients"

@@ -1,8 +1,10 @@
-from typing import Dict, List, Optional
-import time
-import logging
+# Python standard library imports
 from dataclasses import dataclass
+import logging
+import time
+from typing import Dict, List, Optional
 
+# Application imports 
 from app.models.email import Email
 
 """

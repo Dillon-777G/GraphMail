@@ -1,5 +1,8 @@
-from typing import Optional
+# Python standard library imports
 import logging
+from typing import Optional
+
+# Local imports
 from app.models.metrics.base_metrics import BaseMetrics
 
 class FolderMetrics(BaseMetrics):

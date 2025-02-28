@@ -1,10 +1,13 @@
-from typing import Optional, Dict
+# Python standard library imports
 import logging
+from typing import Dict, Optional
 
+# Third party imports
 from fastapi import Request
 
-from app.service.graph.graph_authentication_service import Graph
+# Application imports
 from app.error_handling.exceptions.authentication_exception import AuthenticationFailedException
+from app.service.graph.graph_authentication_service import Graph
 
 class AuthDependency:
     def __init__(self, graph: Graph):
